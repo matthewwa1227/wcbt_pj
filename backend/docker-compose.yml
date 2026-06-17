@@ -1,0 +1,15 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:16
+    container_name: casualapp-db
+    environment:
+      POSTGRES_USER: casualuser
+      POSTGRES_PASSWORD: casualpass
+      POSTGRES_DB: casualapp
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
