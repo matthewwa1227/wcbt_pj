@@ -1,6 +1,213 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/background"
+    android:padding="24dp">
+
+    <!-- App Logo / Title -->
+    <TextView
+        android:id="@+id/tvAppTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="48dp"
+        android:text="CasualApp"
+        android:textColor="@color/primary"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Welcome Text -->
+    <TextView
+        android:id="@+id/tvWelcome"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="歡迎回來"
+        android:textColor="@color/on_surface"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvAppTitle" />
+
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="請登入您的帳戶以繼續使用"
+        android:textColor="@color/on_surface_variant"
+        android:textSize="14sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvWelcome" />
+
+    <!-- Segmented Control (Worker / Employer) -->
+    <LinearLayout
+        android:id="@+id/segmentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_segmented_container"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        app:layout_constraintTop_toBottomOf="@id/tvSubtitle">
+
+        <TextView
+            android:id="@+id/btnWorker"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_segment_unselected"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:text="員工"
+            android:textColor="@color/on_surface_variant"
+            android:textSize="14sp"
+            android:textStyle="normal" />
+
+        <TextView
+            android:id="@+id/btnEmployer"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/bg_segment_selected"
+            android:gravity="center"
+            android:paddingVertical="10dp"
+            android:text="雇主"
+            android:textColor="@color/primary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:elevation="2dp" />
+    </LinearLayout>
+
+    <!-- Phone Number Input -->
+    <TextView
+        android:id="@+id/labelPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="4dp"
+        android:text="電話號碼"
+        android:textColor="@color/on_surface_variant"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/segmentContainer" />
+
+    <EditText
+        android:id="@+id/etPhone"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input_field"
+        android:drawableStart="@android:drawable/ic_menu_call"
+        android:drawablePadding="12dp"
+        android:drawableTint="@color/outline"
+        android:hint="輸入您的電話號碼"
+        android:inputType="phone"
+        android:paddingHorizontal="16dp"
+        android:textColor="@color/on_surface"
+        android:textColorHint="@color/outline"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/labelPhone" />
+
+    <!-- Password Input -->
+    <TextView
+        android:id="@+id/labelPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginStart="4dp"
+        android:text="密碼"
+        android:textColor="@color/on_surface_variant"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etPhone" />
+
+    <EditText
+        android:id="@+id/etPassword"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/bg_input_field"
+        android:drawableStart="@android:drawable/ic_lock_idle_lock"
+        android:drawablePadding="12dp"
+        android:drawableTint="@color/outline"
+        android:hint="輸入密碼"
+        android:inputType="textPassword"
+        android:paddingHorizontal="16dp"
+        android:textColor="@color/on_surface"
+        android:textColorHint="@color/outline"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@id/labelPassword" />
+
+    <!-- Forgot Password -->
+    <TextView
+        android:id="@+id/tvForgotPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="忘記密碼？"
+        android:textColor="@color/primary"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/etPassword" />
+
+    <!-- Login Button -->
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/btnLogin"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/bg_segment_selected"
+        android:backgroundTint="@color/primary_dark"
+        android:text="登入 →"
+        android:textAllCaps="false"
+        android:textColor="@color/on_primary"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintTop_toBottomOf="@id/tvForgotPassword" />
+
+    <!-- Footer -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="隱私政策"
+            android:textColor="@color/outline"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:text="•"
+            android:textColor="@color/outline"
+            android:textSize="10sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="服務條款"
+            android:textColor="@color/outline"
+            android:textSize="10sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

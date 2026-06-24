@@ -5,6 +5,16 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+    <!-- Go to Login Screen -->
+    <Button
+        android:id="@+id/btnGoLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go to Login Screen →"
+        android:backgroundTint="@color/primary"
+        android:textColor="@color/on_primary"
+        android:layout_marginBottom="8dp" />
+
     <Button
         android:id="@+id/btnLoadUsers"
         android:layout_width="match_parent"

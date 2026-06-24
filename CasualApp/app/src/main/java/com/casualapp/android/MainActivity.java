@@ -13,6 +13,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import java.util.List;
+import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -39,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
         btnSignUp.setOnClickListener(v -> signUp());
         btnApprove.setOnClickListener(v -> approveSignup(3L));
         btnAttend.setOnClickListener(v -> markAttend(3L));
+
+        Button btnGoLogin = findViewById(R.id.btnGoLogin);
+        btnGoLogin.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void showLoading() {
