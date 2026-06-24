@@ -12,21 +12,12 @@ public class Job {
     private User coordinator;
     private String createdAt;
 
-    public Job() {
-    }
+    // Default constructor
+    public Job() {}
 
-    public Job(
-            Long id,
-            String title,
-            String description,
-            String location,
-            String jobDate,
-            int totalSlots,
-            int filledSlots,
-            String status,
-            User coordinator,
-            String createdAt
-    ) {
+    // All-args constructor
+    public Job(Long id, String title, String description, String location, String jobDate,
+               int totalSlots, int filledSlots, String status, User coordinator, String createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -39,113 +30,60 @@ public class Job {
         this.createdAt = createdAt;
     }
 
-    public Job(
-            String title,
-            String description,
-            String location,
-            String jobDate,
-            int totalSlots,
-            int filledSlots,
-            String status
-    ) {
-        this.title = title;
-        this.description = description;
-        this.location = location;
-        this.jobDate = jobDate;
-        this.totalSlots = totalSlots;
-        this.filledSlots = filledSlots;
-        this.status = status;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public String getJobDate() {
-        return jobDate;
-    }
-
-    public int getTotalSlots() {
-        return totalSlots;
-    }
-
-    public int getFilledSlots() {
-        return filledSlots;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public User getCoordinator() {
-        return coordinator;
-    }
-
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public int getAvailableSlots() {
-        return totalSlots - filledSlots;
-    }
-
+    // Boolean helper methods
     public boolean isOpen() {
-        return "OPEN".equalsIgnoreCase(status) && getAvailableSlots() > 0;
+        return "OPEN".equals(status);
     }
 
     public boolean isFull() {
         return filledSlots >= totalSlots;
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public boolean hasAvailableSlots() {
+        return filledSlots < totalSlots;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public boolean isClosed() {
+        return "CLOSED".equals(status);
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public boolean isCancelled() {
+        return "CANCELLED".equals(status);
     }
 
-    public void setLocation(String location) {
-        this.location = location;
-    }
+    // Getters & Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setJobDate(String jobDate) {
-        this.jobDate = jobDate;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public void setTotalSlots(int totalSlots) {
-        this.totalSlots = totalSlots;
-    }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
 
-    public void setFilledSlots(int filledSlots) {
-        this.filledSlots = filledSlots;
-    }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public String getJobDate() { return jobDate; }
+    public void setJobDate(String jobDate) { this.jobDate = jobDate; }
 
-    public void setCoordinator(User coordinator) {
-        this.coordinator = coordinator;
-    }
+    public int getTotalSlots() { return totalSlots; }
+    public void setTotalSlots(int totalSlots) { this.totalSlots = totalSlots; }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
+    public int getFilledSlots() { return filledSlots; }
+    public void setFilledSlots(int filledSlots) { this.filledSlots = filledSlots; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public User getCoordinator() { return coordinator; }
+    public void setCoordinator(User coordinator) { this.coordinator = coordinator; }
+
+    public String getCreatedAt() { return createdAt; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    @Override
+    public String toString() {
+        return "Job{" + "id=" + id + ", title='" + title + '\'' + ", status='" + status + '\'' + '}';
     }
 }

@@ -1,22 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-android:layout_width="match_parent"
-android:layout_height="match_parent"
-android:orientation="vertical"
-android:padding="16dp">
-
-<Button
-    android:id="@+id/btnLoadUsers"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Load Users from Backend" />
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-<TextView
-    android:id="@+id/tvResult"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Press button to test"
-    android:textSize="14sp"
-    android:layout_marginTop="16dp" />
+    <Button
+        android:id="@+id/btnLoadUsers"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="1. Load Users" />
+
+    <Button
+        android:id="@+id/btnLoadJobs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="2. Load Jobs" />
+
+    <Button
+        android:id="@+id/btnSignUp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="3. Sign Up (Worker 2 → Job 1)" />
+
+    <Button
+        android:id="@+id/btnApprove"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="4. Approve Signup 1" />
+
+    <Button
+        android:id="@+id/btnAttend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="5. Mark Attend (Signup 1)" />
+
+    <TextView
+        android:id="@+id/tvResult"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Press buttons in order 1→5"
+        android:textSize="14sp"
+        android:layout_marginTop="16dp" />
 
 </LinearLayout>
