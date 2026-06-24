@@ -46,6 +46,11 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
         });
+
+        Button btnGoJobList = findViewById(R.id.btnGoJobList);
+        btnGoJobList.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, JobListActivity.class));
+        });
     }
 
     private void showLoading() {

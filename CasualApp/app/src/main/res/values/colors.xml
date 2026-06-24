@@ -1,25 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Existing colors -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
 
     <!-- CasualApp Theme Colors -->
     <color name="primary">#456254</color>
     <color name="primary_dark">#3b584b</color>
     <color name="primary_container">#5d7b6c</color>
     <color name="on_primary">#ffffff</color>
+    <color name="on_primary_container">#f5fff7</color>
+
+    <color name="secondary">#55615a</color>
+    <color name="secondary_container">#d9e6dd</color>
+    <color name="on_secondary">#ffffff</color>
+    <color name="on_secondary_container">#5b6760</color>
+
+    <color name="tertiary">#795250</color>
+    <color name="tertiary_container">#946a68</color>
+    <color name="on_tertiary">#ffffff</color>
 
     <color name="background">#faf9f7</color>
-    <color name="surface">#f4f4f1</color>
+    <color name="on_background">#1a1c1b</color>
+
+    <color name="surface">#faf9f7</color>
     <color name="surface_container">#eeeeeb</color>
+    <color name="surface_container_low">#f4f4f1</color>
+    <color name="surface_container_high">#e8e8e6</color>
+    <color name="surface_container_highest">#e3e2e0</color>
     <color name="surface_container_lowest">#ffffff</color>
+    <color name="surface_variant">#e3e2e0</color>
 
     <color name="on_surface">#1a1c1b</color>
     <color name="on_surface_variant">#424844</color>
+
     <color name="outline">#727974</color>
     <color name="outline_variant">#c1c8c2</color>
 
     <color name="error">#ba1a1a</color>
+    <color name="error_container">#ffdad6</color>
+    <color name="on_error">#ffffff</color>
+    <color name="on_error_container">#93000a</color>
+
+    <!-- Custom colors from Google Stitch -->
+    <color name="top_bar_bg">#efeada</color>
+    <color name="nav_active">#607e6f</color>
+    <color name="nav_inactive">#6e7a73</color>
 </resources>

@@ -53,4 +53,11 @@
         android:textSize="14sp"
         android:layout_marginTop="16dp" />
 
+    <Button
+        android:id="@+id/btnGoJobList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Go to Job List →"
+        android:backgroundTint="#607e6f"
+        android:textColor="@color/on_primary" />
 </LinearLayout>
