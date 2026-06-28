@@ -18,9 +18,10 @@ import android.content.Intent;
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvResult;
-    private static final Long COORDINATOR_ID = 1L;
-    private static final Long WORKER_ID = 2L;
-    private static final Long JOB_ID = 1L;
+    private Long selectedCoordinatorId = null;
+    private Long selectedWorkerId = null;
+    private Long selectedJobId = null;
+    private Long lastSignupId = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
         btnLoadUsers.setOnClickListener(v -> loadUsers());
         btnLoadJobs.setOnClickListener(v -> loadJobs());
         btnSignUp.setOnClickListener(v -> signUp());
-        btnApprove.setOnClickListener(v -> approveSignup(3L));
-        btnAttend.setOnClickListener(v -> markAttend(3L));
+        btnApprove.setOnClickListener(v -> approveSignup());
+        btnAttend.setOnClickListener(v -> markAttend());
 
         Button btnGoLogin = findViewById(R.id.btnGoLogin);
         btnGoLogin.setOnClickListener(v -> {
@@ -64,19 +65,41 @@ public class MainActivity extends AppCompatActivity {
     // 1. Load all users
     private void loadUsers() {
         showLoading();
+
         RetrofitClient.getApiService().getAllUsers().enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<List<User>> call, Response<List<User>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    selectedWorkerId = null;
+                    selectedCoordinatorId = null;
+                    lastSignupId = null;
                     StringBuilder sb = new StringBuilder("=== USERS ===\n");
+
                     for (User u : response.body()) {
                         sb.append("ID: ").append(u.getId())
                                 .append(" | ").append(u.getName())
                                 .append(" | ").append(u.getRole());
-                        if (u.isCoordinator()) sb.append(" [BOSS]");
-                        if (u.isWorker()) sb.append(" [WORKER]");
+
+                        if (u.isCoordinator()) {
+                            sb.append(" [BOSS]");
+                            if (selectedCoordinatorId == null) {
+                                selectedCoordinatorId = u.getId();
+                            }
+                        }
+
+                        if (u.isWorker()) {
+                            sb.append(" [WORKER]");
+                            if (selectedWorkerId == null) {
+                                selectedWorkerId = u.getId();
+                            }
+                        }
+
                         sb.append("\n");
                     }
+
+                    sb.append("\nSelected workerId: ").append(selectedWorkerId);
+                    sb.append("\nSelected coordinatorId: ").append(selectedCoordinatorId);
+
                     showResult(sb.toString());
                 } else {
                     showResult("Error: " + response.code());
@@ -93,21 +116,34 @@ public class MainActivity extends AppCompatActivity {
     // 2. Load all jobs
     private void loadJobs() {
         showLoading();
+
         RetrofitClient.getApiService().getAllJobs().enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<List<Job>> call, Response<List<Job>> response) {
                 if (response.isSuccessful() && response.body() != null) {
+                    selectedJobId = null;
+                    lastSignupId = null;
                     StringBuilder sb = new StringBuilder("=== JOBS ===\n");
+
                     for (Job j : response.body()) {
+                        if (selectedJobId == null && j.hasAvailableSlots()) {
+                            selectedJobId = j.getId();
+                        }
+
                         sb.append("ID: ").append(j.getId())
                                 .append(" | ").append(j.getTitle())
                                 .append(" | ").append(j.getLocation())
                                 .append(" | Slots: ").append(j.getFilledSlots()).append("/").append(j.getTotalSlots());
+
                         if (j.isOpen()) sb.append(" [OPEN]");
                         if (j.isFull()) sb.append(" [FULL]");
                         if (j.hasAvailableSlots()) sb.append(" [AVAILABLE]");
+
                         sb.append("\n");
                     }
+
+                    sb.append("\nSelected jobId: ").append(selectedJobId);
+
                     showResult(sb.toString());
                 } else {
                     showResult("Error: " + response.code());
@@ -123,27 +159,34 @@ public class MainActivity extends AppCompatActivity {
 
     // 3. Worker signs up for a job
     private void signUp() {
+        if (selectedWorkerId == null || selectedJobId == null) {
+            showResult("Load Users and Load Jobs first. Missing workerId or jobId.");
+            return;
+        }
+
         showLoading();
-        RetrofitClient.getApiService().signUp(WORKER_ID, JOB_ID).enqueue(new Callback<>() {
+
+        RetrofitClient.getApiService().signUp(selectedWorkerId, selectedJobId).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<JobSignup> call, Response<JobSignup> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     JobSignup s = response.body();
+                    lastSignupId = s.getId();
+
                     StringBuilder sb = new StringBuilder("=== SIGNUP CREATED ===\n");
                     sb.append("Signup ID: ").append(s.getId())
                             .append("\nStatus: ").append(s.getStatus());
+
                     if (s.isPending()) sb.append(" [PENDING]");
                     if (s.isApproved()) sb.append(" [APPROVED]");
+
                     sb.append("\nWorker: ").append(s.getWorker().getName())
-                            .append("\nJob: ").append(s.getJob().getTitle());
+                            .append("\nJob: ").append(s.getJob().getTitle())
+                            .append("\n\nSaved lastSignupId: ").append(lastSignupId);
+
                     showResult(sb.toString());
-                }  else {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
-                        showResult("Error " + response.code() + ":\n" + errorBody);
-                    } catch (Exception e) {
-                        showResult("Error: " + response.code());
-                    }
+                } else {
+                    showErrorResponse(response);
                 }
             }
 
@@ -154,23 +197,48 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void showErrorResponse(Response<?> response) {
+        try {
+            String errorBody = response.errorBody() != null
+                    ? response.errorBody().string()
+                    : "Unknown error";
+
+            showResult("Error " + response.code() + ":\n" + errorBody);
+        } catch (Exception e) {
+            showResult("Error: " + response.code());
+        }
+    }
+
     // 4. Coordinator approves signup
-    private void approveSignup(Long signupId) {
+    private void approveSignup() {
+        if (lastSignupId == null || selectedCoordinatorId == null) {
+            showResult("Create a signup first and make sure users are loaded.");
+            return;
+        }
+
         showLoading();
-        RetrofitClient.getApiService().approveSignup(signupId, COORDINATOR_ID).enqueue(new Callback<>() {
+
+        RetrofitClient.getApiService().approveSignup(lastSignupId, selectedCoordinatorId).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<JobSignup> call, Response<JobSignup> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     JobSignup s = response.body();
+
                     StringBuilder sb = new StringBuilder("=== APPROVED ===\n");
                     sb.append("Signup ID: ").append(s.getId())
                             .append("\nStatus: ").append(s.getStatus());
+
                     if (s.isApproved()) sb.append(" [APPROVED]");
-                    sb.append("\nApproved by: ").append(s.getActionedBy().getName())
-                            .append("\nUpdated at: ").append(s.getUpdatedAt());
+
+                    if (s.getActionedBy() != null) {
+                        sb.append("\nApproved by: ").append(s.getActionedBy().getName());
+                    }
+
+                    sb.append("\nUpdated at: ").append(s.getUpdatedAt());
+
                     showResult(sb.toString());
                 } else {
-                    showResult("Error: " + response.code());
+                    showErrorResponse(response);
                 }
             }
 
@@ -182,25 +250,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // 5. Coordinator marks attendance
-    private void markAttend(Long signupId) {
+// 5. Coordinator marks attendance
+    private void markAttend() {
+        if (lastSignupId == null || selectedCoordinatorId == null) {
+            showResult("Approve a signup first and make sure users are loaded.");
+            return;
+        }
+
         showLoading();
-        RetrofitClient.getApiService().markAttended(signupId, COORDINATOR_ID).enqueue(new Callback<>() {
+
+        RetrofitClient.getApiService().markAttended(lastSignupId, selectedCoordinatorId).enqueue(new Callback<>() {
             @Override
             public void onResponse(Call<JobAttendance> call, Response<JobAttendance> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     JobAttendance a = response.body();
+
                     StringBuilder sb = new StringBuilder("=== ATTENDANCE ===\n");
                     sb.append("Attendance ID: ").append(a.getId())
                             .append("\nStatus: ").append(a.getStatus());
+
                     if (a.isCompleted()) sb.append(" [COMPLETED]");
                     if (a.isLate()) sb.append(" [LATE]");
                     if (a.isNoShow()) sb.append(" [NO_SHOW]");
                     if (a.hasLateMinutes()) sb.append(" (Late: ").append(a.getLateMinutes()).append(" min)");
-                    sb.append("\nRecorded by: ").append(a.getRecordedBy().getName())
-                            .append("\nRecorded at: ").append(a.getRecordedAt());
+
+                    if (a.getRecordedBy() != null) {
+                        sb.append("\nRecorded by: ").append(a.getRecordedBy().getName());
+                    }
+
+                    sb.append("\nRecorded at: ").append(a.getRecordedAt());
+
                     showResult(sb.toString());
                 } else {
-                    showResult("Error: " + response.code());
+                    showErrorResponse(response);
                 }
             }
 
