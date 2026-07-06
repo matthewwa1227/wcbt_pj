@@ -5,22 +5,27 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.casualapp.android.model.Job;
+
+import java.util.ArrayList;
 import java.util.List;
 
 public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
-    private List<Job> jobs;
-    private OnJobClickListener listener;
+    private final List<Job> jobs;
+    private final OnJobClickListener listener;
 
     public interface OnJobClickListener {
         void onJobClick(Job job);
     }
 
     public JobAdapter(List<Job> jobs, OnJobClickListener listener) {
-        this.jobs = jobs;
+        this.jobs = jobs != null ? jobs : new ArrayList<>();
         this.listener = listener;
     }
 
@@ -35,24 +40,89 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull JobViewHolder holder, int position) {
         Job job = jobs.get(position);
-        holder.tvDepartment.setText("九龍酒店1 • 部門" + (position + 1));
-        holder.tvJobTitle.setText(job.getTitle());
-        holder.tvUpdateDate.setText("更新日期：2023-11-" + (19 - position));
 
-        // Status badge logic
-        if (job.isFull() || job.getFilledSlots() >= job.getTotalSlots() - 1) {
+        holder.tvDepartment.setText(buildLocationText(job));
+        holder.tvJobTitle.setText(safeText(job.getTitle(), "未命名工作"));
+        holder.tvUpdateDate.setText(buildDateAndSlotsText(job));
+
+        bindStatusBadge(holder, job);
+
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onJobClick(job);
+            }
+        });
+    }
+
+    private String buildLocationText(Job job) {
+        String location = safeText(job.getLocation(), "未知地點");
+
+        if (job.getCoordinator() != null && job.getCoordinator().getName() != null) {
+            return location + " • " + job.getCoordinator().getName();
+        }
+
+        return location;
+    }
+
+    private String buildDateAndSlotsText(Job job) {
+        String date = formatDate(job.getJobDate());
+        return "日期：" + date + "  |  名額：" + job.getFilledSlots() + "/" + job.getTotalSlots();
+    }
+
+    private void bindStatusBadge(JobViewHolder holder, Job job) {
+        int totalSlots = job.getTotalSlots();
+        int filledSlots = job.getFilledSlots();
+
+        if (totalSlots <= 0) {
+            holder.tvStatusBadge.setText("未開放");
+            holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_red);
+            holder.tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(holder.itemView.getContext(), android.R.color.holo_red_dark)
+            );
+            return;
+        }
+
+        int remainingSlots = totalSlots - filledSlots;
+
+        if (job.isFull() || remainingSlots <= 0) {
             holder.tvStatusBadge.setText("即將滿額");
             holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_red);
-            holder.tvStatusBadge.setTextColor(holder.itemView.getContext().getColor(android.R.color.holo_red_dark));
+            holder.tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(holder.itemView.getContext(), android.R.color.holo_red_dark)
+            );
+        } else if (remainingSlots == 1) {
+            holder.tvStatusBadge.setText("剩餘1位");
+            holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_red);
+            holder.tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(holder.itemView.getContext(), android.R.color.holo_red_dark)
+            );
         } else {
             holder.tvStatusBadge.setText("熱烈招聘");
             holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_green);
-            holder.tvStatusBadge.setTextColor(holder.itemView.getContext().getColor(R.color.primary));
+            holder.tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(holder.itemView.getContext(), R.color.primary)
+            );
+        }
+    }
+
+    private String formatDate(String rawDate) {
+        if (rawDate == null || rawDate.trim().isEmpty()) {
+            return "未設定";
         }
 
-        holder.itemView.setOnClickListener(v -> {
-            if (listener != null) listener.onJobClick(job);
-        });
+        // Backend LocalDateTime usually arrives like: 2023-11-19T10:00:00
+        if (rawDate.contains("T")) {
+            return rawDate.substring(0, rawDate.indexOf("T"));
+        }
+
+        return rawDate;
+    }
+
+    private String safeText(String value, String fallback) {
+        if (value == null || value.trim().isEmpty()) {
+            return fallback;
+        }
+        return value;
     }
 
     @Override
@@ -62,10 +132,14 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
     static class JobViewHolder extends RecyclerView.ViewHolder {
         ImageView ivJobImage;
-        TextView tvDepartment, tvJobTitle, tvUpdateDate, tvStatusBadge;
+        TextView tvDepartment;
+        TextView tvJobTitle;
+        TextView tvUpdateDate;
+        TextView tvStatusBadge;
 
-        JobViewHolder(View itemView) {
+        JobViewHolder(@NonNull View itemView) {
             super(itemView);
+
             ivJobImage = itemView.findViewById(R.id.ivJobImage);
             tvDepartment = itemView.findViewById(R.id.tvDepartment);
             tvJobTitle = itemView.findViewById(R.id.tvJobTitle);
