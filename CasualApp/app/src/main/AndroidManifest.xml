@@ -32,6 +32,10 @@
         <activity
             android:name=".JobListActivity"
             android:exported="false" />
+            
+        <activity
+            android:name=".CreateJobActivity"
+            android:exported="false" />    
 
     </application>
 
