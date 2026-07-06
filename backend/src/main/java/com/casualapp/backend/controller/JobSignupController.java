@@ -14,6 +14,7 @@ import com.casualapp.backend.model.AttendanceStatus;
 import com.casualapp.backend.model.Job;
 import com.casualapp.backend.model.JobAttendance;
 import com.casualapp.backend.model.JobSignup;
+import com.casualapp.backend.model.JobStatus;
 import com.casualapp.backend.model.SignupStatus;
 import com.casualapp.backend.model.User;
 import com.casualapp.backend.repository.JobAttendanceRepository;
@@ -55,6 +56,16 @@ public class JobSignupController {
         Job job = jobRepository.findById(jobId)
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
+        if (job.getStatus() == JobStatus.FULL) {
+            throw new RuntimeException("Job is already full");
+        }
+
+        if (job.getFilledSlots() >= job.getTotalSlots()) {
+            job.setStatus(JobStatus.FULL);
+            jobRepository.save(job);
+            throw new RuntimeException("Job is already full");
+        }
+
         jobSignupRepository.findByJobIdAndWorkerId(jobId, workerId)
                 .ifPresent(existing -> {
                     throw new RuntimeException("Worker already signed up for this job");
@@ -76,14 +87,29 @@ public class JobSignupController {
         User coordinator = userRepository.findById(coordinatorId)
                 .orElseThrow(() -> new RuntimeException("Coordinator not found"));
 
+        if (signup.getStatus() == SignupStatus.APPROVED) {
+            throw new RuntimeException("Signup is already approved");
+        }
+
+        Job job = signup.getJob();
+
+        if (job.getStatus() == JobStatus.FULL) {
+            throw new RuntimeException("Job is already full");
+        }
+
+        if (job.getFilledSlots() >= job.getTotalSlots()) {
+            job.setStatus(JobStatus.FULL);
+            jobRepository.save(job);
+            throw new RuntimeException("Job is already full");
+        }
+
         signup.setStatus(SignupStatus.APPROVED);
         signup.setActionedBy(coordinator);
 
-        Job job = signup.getJob();
         job.setFilledSlots(job.getFilledSlots() + 1);
 
         if (job.getFilledSlots() >= job.getTotalSlots()) {
-            job.setStatus(com.casualapp.backend.model.JobStatus.FULL);
+            job.setStatus(JobStatus.FULL);
         }
 
         jobRepository.save(job);
