@@ -31,10 +31,10 @@ public class ApplySuccessActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
 
         btnMyJobs.setOnClickListener(v -> {
-            // TODO: Open My Jobs screen
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, MyJobsLandingActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(intent);
+            finish();
         });
 
         btnBackHome.setOnClickListener(v -> {

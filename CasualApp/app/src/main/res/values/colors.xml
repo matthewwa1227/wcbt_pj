@@ -55,4 +55,7 @@
 
     <color name="on_secondary_fixed">#131e19</color>
     <color name="on_tertiary_fixed">#2f1312</color>
+
+    <color name="primary_fixed">#c9ead8</color>
+    <color name="tertiary_fixed">#ffdad7</color>
 </resources>
