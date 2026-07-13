@@ -1,6 +1,6 @@
 package com.casualapp.android.model;
 
-public class Job {
+public class Job implements java.io.Serializable {
     private Long id;
     private String title;
     private String description;

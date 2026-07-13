@@ -105,7 +105,7 @@ public class LoginActivity extends AppCompatActivity {
                     if (user.isCoordinator()) {
                         startActivity(new Intent(LoginActivity.this, CreateJobActivity.class));
                     } else {
-                        startActivity(new Intent(LoginActivity.this, JobListActivity.class));
+                        startActivity(new Intent(LoginActivity.this, RegionSelectionActivity.class));
                     }
                     finish();
 

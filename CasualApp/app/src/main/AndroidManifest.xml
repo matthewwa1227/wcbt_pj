@@ -35,7 +35,11 @@
             
         <activity
             android:name=".CreateJobActivity"
-            android:exported="false" />    
+            android:exported="false" />
+
+        <activity android:name=".RegionSelectionActivity" />
+
+        <activity android:name=".JobDetailActivity" />
 
     </application>
 

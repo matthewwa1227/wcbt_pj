@@ -1,6 +1,6 @@
 package com.casualapp.android.model;
 
-public class User {
+public class User implements java.io.Serializable {
     private Long id;
     private String phoneNumber;
     private String name;
