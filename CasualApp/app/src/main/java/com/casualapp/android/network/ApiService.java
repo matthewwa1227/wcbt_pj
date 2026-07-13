@@ -3,6 +3,7 @@ package com.casualapp.android.network;
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.JobAttendance;
 import com.casualapp.android.model.JobSignup;
+import com.casualapp.android.model.LoginRequest;
 import com.casualapp.android.model.User;
 import retrofit2.Call;
 import retrofit2.http.*;
@@ -10,6 +11,9 @@ import retrofit2.http.*;
 import java.util.List;
 
 public interface ApiService {
+
+    @POST("api/auth/login")
+    Call<User> login(@Body LoginRequest request);
 
     @GET("api/users")
     Call<List<User>> getAllUsers();

@@ -1,5 +1,6 @@
 package com.casualapp.android;
 
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.widget.EditText;
@@ -8,6 +9,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
+import com.casualapp.android.model.LoginRequest;
+import com.casualapp.android.model.User;
+import com.casualapp.android.network.RetrofitClient;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -36,7 +43,6 @@ public class LoginActivity extends AppCompatActivity {
             Toast.makeText(this, "Forgot password clicked", Toast.LENGTH_SHORT).show();
         });
 
-        // Set initial state
         setRole(true);
     }
 
@@ -44,7 +50,6 @@ public class LoginActivity extends AppCompatActivity {
         isWorker = worker;
 
         if (worker) {
-            // Worker selected
             btnWorker.setBackground(ContextCompat.getDrawable(this, R.drawable.bg_segment_selected));
             btnWorker.setTextColor(getColor(R.color.primary));
             btnWorker.setTypeface(null, Typeface.BOLD);
@@ -55,7 +60,6 @@ public class LoginActivity extends AppCompatActivity {
             btnEmployer.setTypeface(null, Typeface.NORMAL);
             btnEmployer.setElevation(0f);
         } else {
-            // Employer selected
             btnEmployer.setBackground(ContextCompat.getDrawable(this, R.drawable.bg_segment_selected));
             btnEmployer.setTextColor(getColor(R.color.primary));
             btnEmployer.setTypeface(null, Typeface.BOLD);
@@ -76,12 +80,49 @@ public class LoginActivity extends AppCompatActivity {
             etPhone.setError("請輸入電話號碼");
             return;
         }
-        if (password.isEmpty()) {
-            etPassword.setError("請輸入密碼");
-            return;
-        }
 
-        String role = isWorker ? "WORKER" : "COORDINATOR";
-        Toast.makeText(this, "Login as " + role + ": " + phone, Toast.LENGTH_SHORT).show();
+        LoginRequest request = new LoginRequest(phone, password);
+
+        RetrofitClient.getApiService().login(request).enqueue(new Callback<>() {
+            @Override
+            public void onResponse(Call<User> call, Response<User> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    User user = response.body();
+                    UserSession.setCurrentUser(user);
+
+                    String selectedRole = isWorker ? "WORKER" : "COORDINATOR";
+                    if (!selectedRole.equals(user.getRole().name())) {
+                        Toast.makeText(LoginActivity.this,
+                            "身份不匹配：此帳戶為 " + user.getRole().name(),
+                            Toast.LENGTH_LONG).show();
+                        return;
+                    }
+
+                    Toast.makeText(LoginActivity.this,
+                        "歡迎 " + user.getName(),
+                        Toast.LENGTH_SHORT).show();
+
+                    if (user.isCoordinator()) {
+                        startActivity(new Intent(LoginActivity.this, CreateJobActivity.class));
+                    } else {
+                        startActivity(new Intent(LoginActivity.this, JobListActivity.class));
+                    }
+                    finish();
+
+                } else {
+                    try {
+                        String error = response.errorBody() != null ? response.errorBody().string() : "Login failed";
+                        Toast.makeText(LoginActivity.this, error, Toast.LENGTH_LONG).show();
+                    } catch (Exception e) {
+                        Toast.makeText(LoginActivity.this, "Login error: " + response.code(), Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<User> call, Throwable t) {
+                Toast.makeText(LoginActivity.this, "Network failed: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 }
