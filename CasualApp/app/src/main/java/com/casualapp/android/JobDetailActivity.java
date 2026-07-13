@@ -70,8 +70,9 @@ public class JobDetailActivity extends AppCompatActivity {
                 Toast.makeText(this, "請選擇至少一個時段", Toast.LENGTH_SHORT).show();
                 return;
             }
-            Toast.makeText(this, "已選擇 " + selectedCount + " 個時段，前往確認", Toast.LENGTH_SHORT).show();
-            // TODO: Intent to ConfirmApplyActivity
+            Intent intent = new Intent(this, ConfirmApplyActivity.class);
+            intent.putExtra("job", job);
+            startActivity(intent);
         });
 
         // Initial state

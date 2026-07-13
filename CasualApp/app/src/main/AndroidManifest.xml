@@ -41,6 +41,10 @@
 
         <activity android:name=".JobDetailActivity" />
 
+        <activity android:name=".ConfirmApplyActivity" />
+
+        <activity android:name=".ApplySuccessActivity" />
+
     </application>
 
 </manifest>

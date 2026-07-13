@@ -50,4 +50,9 @@
     <color name="top_bar_bg">#efeada</color>
     <color name="nav_active">#607e6f</color>
     <color name="nav_inactive">#6e7a73</color>
+
+    <color name="primary_10">#1A456254</color>
+
+    <color name="on_secondary_fixed">#131e19</color>
+    <color name="on_tertiary_fixed">#2f1312</color>
 </resources>
