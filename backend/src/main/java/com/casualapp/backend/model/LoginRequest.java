@@ -1,4 +1,4 @@
-package com.casualapp.android.model;
+package com.casualapp.backend.model;
 
 public class LoginRequest {
     private String phoneNumber;

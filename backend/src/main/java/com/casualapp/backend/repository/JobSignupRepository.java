@@ -19,4 +19,7 @@ public interface JobSignupRepository extends JpaRepository<JobSignup, Long> {
     List<JobSignup> findByWorkerId(Long workerId);
 
     List<JobSignup> findByStatus(SignupStatus status);
+
+    // Finds applications belonging to jobs created by one coordinator.
+    List<JobSignup> findByJobCoordinatorId(Long coordinatorId);
 }
