@@ -94,12 +94,20 @@ public class ApplySuccessActivity extends AppCompatActivity {
             return "受理中";
         }
 
-        return switch (status) {
-            case "APPROVED" -> "已接受";
-            case "REJECTED" -> "已拒絕";
-            case "CANCELLED" -> "已取消";
-            default -> "受理中";
-        };
+        switch (status) {
+            case "APPROVED":
+                return "已接受";
+
+            case "REJECTED":
+                return "已拒絕";
+
+            case "CANCELLED":
+                return "已取消";
+
+            case "PENDING":
+            default:
+                return "受理中";
+        }
     }
 
     private void openMyApplications() {

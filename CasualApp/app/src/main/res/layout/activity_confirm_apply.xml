@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
+
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -23,6 +24,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
             android:tint="#607e6f" />
 
@@ -43,12 +45,14 @@
             android:textColor="#607e6f"
             android:textSize="16sp"
             android:textStyle="bold" />
+
     </LinearLayout>
 
     <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fillViewport="true"
         android:paddingHorizontal="16dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintTop_toBottomOf="@id/topBar">
@@ -78,8 +82,10 @@
                     <ImageView
                         android:layout_width="32dp"
                         android:layout_height="32dp"
+                        android:contentDescription="Job"
                         android:src="@android:drawable/ic_menu_myplaces"
                         android:tint="@color/primary_container" />
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -93,7 +99,7 @@
                         android:id="@+id/tvHotelName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="九龍酒店1 • 部門1"
+                        android:text="地點待定"
                         android:textColor="@color/primary"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -103,15 +109,20 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="宴會廳侍應"
+                        android:text="職位資料載入中"
                         android:textColor="@color/secondary"
                         android:textSize="14sp" />
 
+                    <!--
+                        Hidden until the backend provides real job-category
+                        and district fields.
+                    -->
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="8dp"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -119,7 +130,7 @@
                             android:background="@drawable/bg_secondary_fixed"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="2dp"
-                            android:text="Waitstaff"
+                            android:text="Job category"
                             android:textColor="@color/on_secondary_fixed"
                             android:textSize="10sp"
                             android:textStyle="bold" />
@@ -131,15 +142,18 @@
                             android:background="@drawable/bg_tertiary_fixed"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="2dp"
-                            android:text="Tsim Sha Tsui"
+                            android:text="District"
                             android:textColor="@color/on_tertiary_fixed"
                             android:textSize="10sp"
                             android:textStyle="bold" />
+
                     </LinearLayout>
+
                 </LinearLayout>
+
             </LinearLayout>
 
-            <!-- Selected Time Slots -->
+            <!-- Selected Shift Header -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -160,12 +174,13 @@
                     android:id="@+id/tvSlotCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="共 1 個時段"
+                    android:text="共 1 個工作時段"
                     android:textColor="@color/secondary"
                     android:textSize="12sp" />
+
             </LinearLayout>
 
-            <!-- Selected Slot Card -->
+            <!-- Selected Shift Card -->
             <LinearLayout
                 android:id="@+id/cardSelectedSlot"
                 android:layout_width="match_parent"
@@ -176,6 +191,7 @@
                 android:orientation="horizontal"
                 android:padding="16dp">
 
+                <!-- Dynamic Month and Day -->
                 <LinearLayout
                     android:layout_width="56dp"
                     android:layout_height="56dp"
@@ -184,9 +200,10 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvSlotMonth"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="6月"
+                        android:text="--"
                         android:textColor="@color/primary"
                         android:textSize="12sp"
                         android:textStyle="bold" />
@@ -195,12 +212,14 @@
                         android:id="@+id/tvSlotDay"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="25"
+                        android:text="--"
                         android:textColor="@color/primary"
                         android:textSize="20sp"
                         android:textStyle="bold" />
+
                 </LinearLayout>
 
+                <!-- Dynamic Full Date and Start Time -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -212,7 +231,7 @@
                         android:id="@+id/tvSlotDate"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="2026年6月25日 (星期四)"
+                        android:text="日期待定"
                         android:textColor="#3B584B"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -227,6 +246,7 @@
                         <ImageView
                             android:layout_width="16dp"
                             android:layout_height="16dp"
+                            android:contentDescription="Time"
                             android:src="@android:drawable/ic_menu_recent_history"
                             android:tint="#3b584b" />
 
@@ -235,27 +255,33 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="4dp"
-                            android:text="18:00 - 23:00"
+                            android:text="時間待定"
                             android:textColor="#3b584b"
                             android:textSize="14sp" />
+
                     </LinearLayout>
+
                 </LinearLayout>
 
+                <!-- Hidden because the backend has no wage field yet -->
                 <TextView
                     android:id="@+id/tvSlotPrice"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="8dp"
-                    android:text="$120"
+                    android:text=""
                     android:textColor="#3B584B"
                     android:textSize="20sp"
-                    android:textStyle="bold" />
+                    android:textStyle="bold"
+                    android:visibility="gone" />
 
                 <ImageView
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="Selected"
+                    android:src="@android:drawable/ic_menu_save"
                     android:tint="#3B584B" />
+
             </LinearLayout>
 
             <!-- Confirm Button -->
@@ -281,6 +307,7 @@
                 android:textSize="12sp" />
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
     <!-- Bottom Navigation -->
@@ -295,6 +322,7 @@
         android:paddingHorizontal="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- Work List -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="48dp"
@@ -306,6 +334,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Work list"
                 android:src="@android:drawable/ic_menu_agenda"
                 android:tint="#607e6f" />
 
@@ -316,8 +345,10 @@
                 android:textColor="#607e6f"
                 android:textSize="11sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
 
+        <!-- Work History -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="48dp"
@@ -328,6 +359,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Work history"
                 android:src="@android:drawable/ic_menu_recent_history"
                 android:tint="#6e7a73" />
 
@@ -337,8 +369,10 @@
                 android:text="工作記錄"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
 
+        <!-- My Jobs -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="48dp"
@@ -349,6 +383,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="My jobs"
                 android:src="@android:drawable/ic_menu_myplaces"
                 android:tint="#6e7a73" />
 
@@ -358,8 +393,10 @@
                 android:text="我的工作"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
 
+        <!-- Profile -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="48dp"
@@ -370,6 +407,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Profile"
                 android:src="@android:drawable/ic_menu_info_details"
                 android:tint="#6e7a73" />
 
@@ -379,7 +417,9 @@
                 android:text="個人檔案"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
