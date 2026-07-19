@@ -2,22 +2,29 @@ package com.casualapp.android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.casualapp.android.model.JobSignup;
+import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import java.util.List;
 
 public class MyJobsLandingActivity extends AppCompatActivity {
 
     private TextView tvBadgeCount;
-    private LinearLayout rowApplications, rowSchedule;
+    private LinearLayout rowApplications;
+    private LinearLayout rowSchedule;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,44 +34,110 @@ public class MyJobsLandingActivity extends AppCompatActivity {
         tvBadgeCount = findViewById(R.id.tvBadgeCount);
         rowApplications = findViewById(R.id.rowApplications);
         rowSchedule = findViewById(R.id.rowSchedule);
+
         ImageButton btnBack = findViewById(R.id.btnBack);
 
         btnBack.setOnClickListener(v -> finish());
 
-        rowApplications.setOnClickListener(v -> {
-            startActivity(new Intent(this, MyJobsActivity.class));
-        });
+        rowApplications.setOnClickListener(v ->
+                startActivity(
+                        new Intent(
+                                this,
+                                MyJobsActivity.class
+                        )
+                )
+        );
 
-        rowSchedule.setOnClickListener(v -> {
-            Toast.makeText(this, "我的行程 coming soon", Toast.LENGTH_SHORT).show();
-        });
+        rowSchedule.setOnClickListener(v ->
+                Toast.makeText(
+                        this,
+                        "我的行程 coming soon",
+                        Toast.LENGTH_SHORT
+                ).show()
+        );
 
-        // Bottom nav
         findViewById(R.id.tabWorkList).setOnClickListener(v -> {
-            startActivity(new Intent(this, JobListActivity.class));
-        });
+            Intent intent = new Intent(
+                    this,
+                    JobListActivity.class
+            );
 
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadBadgeCount();
     }
 
     private void loadBadgeCount() {
-        Long workerId = UserSession.getCurrentUser() != null ? UserSession.getCurrentUser().getId() : 2L;
+        User currentWorker = UserSession.getCurrentUser();
 
-        RetrofitClient.getApiService().getAllSignups().enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<List<JobSignup>> call, Response<List<JobSignup>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    long count = response.body().stream()
-                            .filter(s -> s.getWorker() != null && s.getWorker().getId().equals(workerId))
-                            .count();
-                    tvBadgeCount.setText(String.valueOf(count));
-                }
-            }
+        if (!isWorker(currentWorker)) {
+            returnToLogin();
+            return;
+        }
 
-            @Override
-            public void onFailure(Call<List<JobSignup>> call, Throwable t) {
-                tvBadgeCount.setText("0");
-            }
-        });
+        RetrofitClient.getApiService()
+                .getWorkerSignups(currentWorker.getId())
+                .enqueue(new Callback<>() {
+
+                    @Override
+                    public void onResponse(
+                            Call<List<JobSignup>> call,
+                            Response<List<JobSignup>> response
+                    ) {
+                        if (!response.isSuccessful()
+                                || response.body() == null) {
+
+                            setBadgeCount(0);
+                            return;
+                        }
+
+                        setBadgeCount(response.body().size());
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<List<JobSignup>> call,
+                            Throwable throwable
+                    ) {
+                        setBadgeCount(0);
+                    }
+                });
+    }
+
+    private void setBadgeCount(int count) {
+        tvBadgeCount.setText(String.valueOf(count));
+
+        tvBadgeCount.setVisibility(
+                count > 0 ? View.VISIBLE : View.GONE
+        );
+    }
+
+    private boolean isWorker(User user) {
+        return user != null
+                && user.getRole() != null
+                && "WORKER".equals(user.getRole().name());
+    }
+
+    private void returnToLogin() {
+        UserSession.clear();
+
+        Intent intent = new Intent(
+                this,
+                LoginActivity.class
+        );
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
     }
 }

@@ -4,14 +4,17 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ImageButton;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
+
 import com.casualapp.android.model.Job;
 
 public class ApplySuccessActivity extends AppCompatActivity {
 
     private TextView tvJobDetail;
-    private AppCompatButton btnMyJobs, btnBackHome;
+    private AppCompatButton btnMyJobs;
+    private AppCompatButton btnBackHome;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,26 +24,111 @@ public class ApplySuccessActivity extends AppCompatActivity {
         tvJobDetail = findViewById(R.id.tvJobDetail);
         btnMyJobs = findViewById(R.id.btnMyJobs);
         btnBackHome = findViewById(R.id.btnBackHome);
+
         ImageButton btnBack = findViewById(R.id.btnBack);
 
         Job job = (Job) getIntent().getSerializableExtra("job");
+
+        long signupId = getIntent().getLongExtra(
+                "signupId",
+                -1L
+        );
+
+        String signupStatus = getIntent().getStringExtra(
+                "signupStatus"
+        );
+
+        bindResult(job, signupId, signupStatus);
+
+        btnBack.setOnClickListener(v -> openJobList());
+        btnBackHome.setOnClickListener(v -> openJobList());
+        btnMyJobs.setOnClickListener(v -> openMyApplications());
+    }
+
+    private void bindResult(
+            Job job,
+            long signupId,
+            String signupStatus
+    ) {
+        StringBuilder text = new StringBuilder();
+
         if (job != null) {
-            tvJobDetail.setText(job.getLocation() + " - " + job.getTitle());
+            text.append(
+                    safeText(job.getLocation(), "地點待定")
+            );
+
+            text.append(" - ");
+
+            text.append(
+                    safeText(job.getTitle(), "未命名職位")
+            );
+
+            text.append("\n");
+            text.append(
+                    JobDateFormatter.formatFullDate(
+                            job.getJobDate()
+                    )
+            );
+
+            text.append(" ");
+            text.append(
+                    JobDateFormatter.formatStartTime(
+                            job.getJobDate()
+                    )
+            );
         }
 
-        btnBack.setOnClickListener(v -> finish());
+        if (signupId >= 0) {
+            text.append("\n申請編號：#");
+            text.append(signupId);
+        }
 
-        btnMyJobs.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MyJobsLandingActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            finish();
-        });
+        text.append("\n狀態：");
+        text.append(translateStatus(signupStatus));
 
-        btnBackHome.setOnClickListener(v -> {
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-        });
+        tvJobDetail.setText(text.toString());
+    }
+
+    private String translateStatus(String status) {
+        if (status == null) {
+            return "受理中";
+        }
+
+        return switch (status) {
+            case "APPROVED" -> "已接受";
+            case "REJECTED" -> "已拒絕";
+            case "CANCELLED" -> "已取消";
+            default -> "受理中";
+        };
+    }
+
+    private void openMyApplications() {
+        Intent intent = new Intent(
+                this,
+                MyJobsActivity.class
+        );
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        startActivity(intent);
+        finish();
+    }
+
+    private void openJobList() {
+        Intent intent = new Intent(
+                this,
+                JobListActivity.class
+        );
+
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        startActivity(intent);
+        finish();
+    }
+
+    private String safeText(String value, String fallback) {
+        return value == null || value.isBlank()
+                ? fallback
+                : value;
     }
 }

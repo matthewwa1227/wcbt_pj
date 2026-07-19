@@ -1,5 +1,5 @@
 package com.casualapp.android.network;
-
+import java.util.List;
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.JobAttendance;
 import com.casualapp.android.model.JobSignup;
@@ -44,7 +44,7 @@ public interface ApiService {
             @Path("coordinatorId") Long coordinatorId
     );
 
-    @GET("signups/worker/{workerId}")
+    @GET("api/signups/worker/{workerId}")
     Call<List<JobSignup>> getWorkerSignups(
             @Path("workerId") Long workerId
     );

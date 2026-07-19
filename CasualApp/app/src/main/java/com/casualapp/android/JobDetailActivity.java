@@ -2,113 +2,263 @@ package com.casualapp.android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
+
 import com.casualapp.android.model.Job;
+import com.casualapp.android.model.User;
 
 public class JobDetailActivity extends AppCompatActivity {
 
-    private TextView tvJobTitle, tvStatusBadge, tvDescription, tvLocation, tvSelectedCount;
-    private LinearLayout cardSlot1, cardSlot2;
-    private CheckBox cbSlot1, cbSlot2;
+    private TextView tvJobTitle;
+    private TextView tvStatusBadge;
+    private TextView tvDescription;
+    private TextView tvRequirements;
+    private TextView tvLocation;
+    private TextView tvSelectedCount;
+
+    private TextView tvSlot1Month;
+    private TextView tvSlot1Day;
+    private TextView tvSlot1Date;
+    private TextView tvSlot1Time;
+    private TextView tvSlot1Price;
+
+    private LinearLayout cardSlot1;
+    private LinearLayout cardSlot2;
+
+    private CheckBox cbSlot1;
+    private CheckBox cbSlot2;
+
     private AppCompatButton btnConfirm;
+
     private Job job;
-    private int selectedCount = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_job_detail);
 
-        tvJobTitle = findViewById(R.id.tvJobTitle);
-        tvStatusBadge = findViewById(R.id.tvStatusBadge);
-        tvDescription = findViewById(R.id.tvDescription);
-        tvLocation = findViewById(R.id.tvLocation);
-        tvSelectedCount = findViewById(R.id.tvSelectedCount);
-        cardSlot1 = findViewById(R.id.cardSlot1);
-        cardSlot2 = findViewById(R.id.cardSlot2);
-        cbSlot1 = findViewById(R.id.cbSlot1);
-        cbSlot2 = findViewById(R.id.cbSlot2);
-        btnConfirm = findViewById(R.id.btnConfirm);
-        ImageButton btnBack = findViewById(R.id.btnBack);
+        bindViews();
 
         job = (Job) getIntent().getSerializableExtra("job");
+
         if (job == null) {
-            Toast.makeText(this, "Job not found", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+                    this,
+                    "Job not found",
+                    Toast.LENGTH_SHORT
+            ).show();
+
             finish();
             return;
         }
 
+        configureSingleShiftLayout();
         bindJobData();
 
+        ImageButton btnBack = findViewById(R.id.btnBack);
         btnBack.setOnClickListener(v -> finish());
 
-        // Slot selection logic
-        cbSlot1.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            updateSlotVisual(cardSlot1, cbSlot1, isChecked);
-            updateSelectedCount();
-        });
+        btnConfirm.setOnClickListener(v -> openConfirmation());
+    }
 
-        cbSlot2.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            updateSlotVisual(cardSlot2, cbSlot2, isChecked);
-            updateSelectedCount();
-        });
+    private void bindViews() {
+        tvJobTitle = findViewById(R.id.tvJobTitle);
+        tvStatusBadge = findViewById(R.id.tvStatusBadge);
+        tvDescription = findViewById(R.id.tvDescription);
+        tvRequirements = findViewById(R.id.tvRequirements);
+        tvLocation = findViewById(R.id.tvLocation);
+        tvSelectedCount = findViewById(R.id.tvSelectedCount);
 
-        // Click card to toggle checkbox
-        cardSlot1.setOnClickListener(v -> cbSlot1.toggle());
-        cardSlot2.setOnClickListener(v -> cbSlot2.toggle());
+        tvSlot1Month = findViewById(R.id.tvSlot1Month);
+        tvSlot1Day = findViewById(R.id.tvSlot1Day);
+        tvSlot1Date = findViewById(R.id.tvSlot1Date);
+        tvSlot1Time = findViewById(R.id.tvSlot1Time);
+        tvSlot1Price = findViewById(R.id.tvSlot1Price);
 
-        btnConfirm.setOnClickListener(v -> {
-            if (selectedCount == 0) {
-                Toast.makeText(this, "請選擇至少一個時段", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            Intent intent = new Intent(this, ConfirmApplyActivity.class);
-            intent.putExtra("job", job);
-            startActivity(intent);
-        });
+        cardSlot1 = findViewById(R.id.cardSlot1);
+        cardSlot2 = findViewById(R.id.cardSlot2);
 
-        // Initial state
-        updateSlotVisual(cardSlot1, cbSlot1, cbSlot1.isChecked());
-        updateSlotVisual(cardSlot2, cbSlot2, cbSlot2.isChecked());
-        updateSelectedCount();
+        cbSlot1 = findViewById(R.id.cbSlot1);
+        cbSlot2 = findViewById(R.id.cbSlot2);
+
+        btnConfirm = findViewById(R.id.btnConfirm);
+    }
+
+    private void configureSingleShiftLayout() {
+        // One backend Job currently represents one actual shift.
+        cardSlot2.setVisibility(View.GONE);
+        cbSlot2.setVisibility(View.GONE);
+
+        cbSlot1.setChecked(true);
+        cbSlot1.setVisibility(View.GONE);
+
+        // The backend does not currently provide a wage field.
+        tvSlot1Price.setVisibility(View.GONE);
+
+        cardSlot1.setBackgroundResource(
+                R.drawable.bg_slot_selected
+        );
+
+        tvSelectedCount.setText("1 個工作時段");
     }
 
     private void bindJobData() {
-        tvJobTitle.setText(job.getTitle());
-        tvLocation.setText(job.getLocation());
-        tvDescription.setText(job.getDescription());
+        tvJobTitle.setText(safeText(job.getTitle(), "未命名職位"));
+        tvLocation.setText(safeText(job.getLocation(), "地點待定"));
+        tvDescription.setText(
+                safeText(job.getDescription(), "未提供工作內容")
+        );
 
-        if (job.isFull() || job.getFilledSlots() >= job.getTotalSlots() - 1) {
+        // There is no requirements field in the current Job model.
+        tvRequirements.setText("未提供額外要求");
+
+        String jobDate = job.getJobDate();
+
+        tvSlot1Month.setText(
+                JobDateFormatter.formatMonth(jobDate)
+        );
+
+        tvSlot1Day.setText(
+                JobDateFormatter.formatDay(jobDate)
+        );
+
+        tvSlot1Date.setText(
+                JobDateFormatter.formatFullDate(jobDate)
+        );
+
+        tvSlot1Time.setText(
+                JobDateFormatter.formatStartTime(jobDate)
+        );
+
+        updateAvailability();
+    }
+
+    private void updateAvailability() {
+        boolean hasSpace = job.hasAvailableSlots();
+        boolean isOpen = job.isOpen();
+        boolean available = isOpen && hasSpace;
+
+        if (!available) {
+            tvStatusBadge.setText(
+                    job.isFull() || !hasSpace
+                            ? "已滿額"
+                            : "暫停申請"
+            );
+
+            tvStatusBadge.setBackgroundResource(
+                    R.drawable.bg_status_badge_red
+            );
+
+            tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(
+                            this,
+                            android.R.color.holo_red_dark
+                    )
+            );
+
+            btnConfirm.setEnabled(false);
+            btnConfirm.setText("暫不可申請");
+            return;
+        }
+
+        int remainingSlots =
+                job.getTotalSlots() - job.getFilledSlots();
+
+        if (remainingSlots <= 1) {
             tvStatusBadge.setText("即將滿額");
-            tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_red);
-            tvStatusBadge.setTextColor(ContextCompat.getColor(this, android.R.color.holo_red_dark));
+            tvStatusBadge.setBackgroundResource(
+                    R.drawable.bg_status_badge_red
+            );
+            tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(
+                            this,
+                            android.R.color.holo_red_dark
+                    )
+            );
         } else {
-            tvStatusBadge.setText("熱烈招聘");
-            tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_green);
-            tvStatusBadge.setTextColor(ContextCompat.getColor(this, R.color.primary));
+            tvStatusBadge.setText("接受申請");
+            tvStatusBadge.setBackgroundResource(
+                    R.drawable.bg_status_badge_green
+            );
+            tvStatusBadge.setTextColor(
+                    ContextCompat.getColor(
+                            this,
+                            R.color.primary
+                    )
+            );
         }
+
+        btnConfirm.setEnabled(true);
+        btnConfirm.setText("下一步");
     }
 
-    private void updateSlotVisual(LinearLayout card, CheckBox cb, boolean checked) {
-        if (checked) {
-            card.setBackgroundResource(R.drawable.bg_slot_selected);
-        } else {
-            card.setBackgroundResource(R.drawable.bg_slot_unselected);
+    private void openConfirmation() {
+        User currentUser = UserSession.getCurrentUser();
+
+        if (!isWorker(currentUser)) {
+            Toast.makeText(
+                    this,
+                    "請先以員工帳戶登入",
+                    Toast.LENGTH_LONG
+            ).show();
+
+            returnToLogin();
+            return;
         }
+
+        if (!job.isOpen() || !job.hasAvailableSlots()) {
+            Toast.makeText(
+                    this,
+                    "此職位目前不可申請",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        Intent intent = new Intent(
+                this,
+                ConfirmApplyActivity.class
+        );
+
+        intent.putExtra("job", job);
+        startActivity(intent);
     }
 
-    private void updateSelectedCount() {
-        selectedCount = 0;
-        if (cbSlot1.isChecked()) selectedCount++;
-        if (cbSlot2.isChecked()) selectedCount++;
-        tvSelectedCount.setText("已選 " + selectedCount + " 個時段");
+    private boolean isWorker(User user) {
+        return user != null
+                && user.getRole() != null
+                && "WORKER".equals(user.getRole().name());
+    }
+
+    private void returnToLogin() {
+        UserSession.clear();
+
+        Intent intent = new Intent(
+                this,
+                LoginActivity.class
+        );
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
+    }
+
+    private String safeText(String value, String fallback) {
+        return value == null || value.isBlank()
+                ? fallback
+                : value;
     }
 }
