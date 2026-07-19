@@ -1,47 +1,68 @@
 package com.casualapp.android.network;
-import java.util.List;
+
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.JobAttendance;
 import com.casualapp.android.model.JobSignup;
 import com.casualapp.android.model.LoginRequest;
 import com.casualapp.android.model.User;
-import retrofit2.Call;
-import retrofit2.http.*;
 
 import java.util.List;
 
+import retrofit2.Call;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+
 public interface ApiService {
 
+    // Authentication
+
     @POST("api/auth/login")
-    Call<User> login(@Body LoginRequest request);
+    Call<User> login(
+            @Body LoginRequest request
+    );
+
+
+    // Users
 
     @GET("api/users")
     Call<List<User>> getAllUsers();
 
     @POST("api/users")
-    Call<User> createUser(@Body User user);
+    Call<User> createUser(
+            @Body User user
+    );
+
+
+    // Jobs
 
     @GET("api/jobs")
     Call<List<Job>> getAllJobs();
 
+    @GET("api/jobs/coordinator/{coordinatorId}")
+    Call<List<Job>> getJobsByCoordinator(
+            @Path("coordinatorId") Long coordinatorId
+    );
+
     @POST("api/jobs")
-    Call<Job> createJob(@Body Job job, @Query("coordinatorId") Long coordinatorId);
+    Call<Job> createJob(
+            @Body Job job,
+            @Query("coordinatorId") Long coordinatorId
+    );
+
+
+    // Signups
 
     @GET("api/signups")
     Call<List<JobSignup>> getAllSignups();
 
     @POST("api/signups")
-    Call<JobSignup> signUp(@Query("workerId") Long workerId, @Query("jobId") Long jobId);
-
-    @PUT("api/signups/{id}/approve")
-    Call<JobSignup> approveSignup(@Path("id") Long id, @Query("coordinatorId") Long coordinatorId);
-
-    @PUT("api/signups/{id}/attend")
-    Call<JobAttendance> markAttended(@Path("id") Long id, @Query("recordedByUserId") Long recordedByUserId);
-
-    @GET("jobs/coordinator/{coordinatorId}")
-    Call<List<Job>> getJobsByCoordinator(
-            @Path("coordinatorId") Long coordinatorId
+    Call<JobSignup> signUp(
+            @Query("workerId") Long workerId,
+            @Query("jobId") Long jobId
     );
 
     @GET("api/signups/worker/{workerId}")
@@ -49,32 +70,35 @@ public interface ApiService {
             @Path("workerId") Long workerId
     );
 
-    @GET("signups/job/{jobId}")
+    @GET("api/signups/job/{jobId}")
     Call<List<JobSignup>> getJobSignups(
             @Path("jobId") Long jobId,
             @Query("coordinatorId") Long coordinatorId
     );
 
-    @GET("signups/coordinator/{coordinatorId}")
+    @GET("api/signups/coordinator/{coordinatorId}")
     Call<List<JobSignup>> getCoordinatorSignups(
             @Path("coordinatorId") Long coordinatorId
     );
 
-    @PUT("signups/{signupId}/approve")
+    @PUT("api/signups/{signupId}/approve")
     Call<JobSignup> approveSignup(
             @Path("signupId") Long signupId,
             @Query("coordinatorId") Long coordinatorId,
             @Query("reason") String reason
     );
 
-    @PUT("signups/{signupId}/reject")
+    @PUT("api/signups/{signupId}/reject")
     Call<JobSignup> rejectSignup(
             @Path("signupId") Long signupId,
             @Query("coordinatorId") Long coordinatorId,
             @Query("reason") String reason
     );
 
-    @PUT("signups/{signupId}/attend")
+
+    // Attendance
+
+    @PUT("api/signups/{signupId}/attend")
     Call<JobAttendance> markAttendance(
             @Path("signupId") Long signupId,
             @Query("recordedByUserId") Long recordedByUserId,

@@ -1,33 +1,42 @@
 package com.casualapp.android;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.JobAttendance;
 import com.casualapp.android.model.JobSignup;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
+
+import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import java.util.List;
-import android.content.Intent;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView tvResult;
-    private Long selectedCoordinatorId = null;
-    private Long selectedWorkerId = null;
-    private Long selectedJobId = null;
-    private Long lastSignupId = null;
+
+    private Long selectedCoordinatorId;
+    private Long selectedWorkerId;
+    private Long selectedJobId;
+    private Long lastSignupId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        bindViews();
+    }
+
+    private void bindViews() {
         tvResult = findViewById(R.id.tvResult);
 
         Button btnLoadUsers = findViewById(R.id.btnLoadUsers);
@@ -35,6 +44,10 @@ public class MainActivity extends AppCompatActivity {
         Button btnSignUp = findViewById(R.id.btnSignUp);
         Button btnApprove = findViewById(R.id.btnApprove);
         Button btnAttend = findViewById(R.id.btnAttend);
+        Button btnGoLogin = findViewById(R.id.btnGoLogin);
+        Button btnGoJobList = findViewById(R.id.btnGoJobList);
+
+        tvResult.setText("Press buttons in order 1 → 5");
 
         btnLoadUsers.setOnClickListener(v -> loadUsers());
         btnLoadJobs.setOnClickListener(v -> loadJobs());
@@ -42,178 +55,383 @@ public class MainActivity extends AppCompatActivity {
         btnApprove.setOnClickListener(v -> approveSignup());
         btnAttend.setOnClickListener(v -> markAttend());
 
-        Button btnGoLogin = findViewById(R.id.btnGoLogin);
         btnGoLogin.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    LoginActivity.class
+            );
+
             startActivity(intent);
         });
 
-        Button btnGoJobList = findViewById(R.id.btnGoJobList);
         btnGoJobList.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, JobListActivity.class));
+            Intent intent = new Intent(
+                    MainActivity.this,
+                    JobListActivity.class
+            );
+
+            startActivity(intent);
         });
     }
 
     private void showLoading() {
-        tvResult.setText("Loading...");
+        showResult("Loading...");
     }
 
     private void showResult(String text) {
-        runOnUiThread(() -> tvResult.setText(text));
+        runOnUiThread(() -> {
+            if (tvResult == null) {
+                return;
+            }
+
+            if (text == null || text.trim().isEmpty()) {
+                tvResult.setText("No result");
+            } else {
+                tvResult.setText(text);
+            }
+        });
     }
 
-    // 1. Load all users
+    // 1. Load users and select the first worker and coordinator.
     private void loadUsers() {
         showLoading();
 
-        RetrofitClient.getApiService().getAllUsers().enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<List<User>> call, Response<List<User>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    selectedWorkerId = null;
-                    selectedCoordinatorId = null;
-                    lastSignupId = null;
-                    StringBuilder sb = new StringBuilder("=== USERS ===\n");
+        RetrofitClient.getApiService()
+                .getAllUsers()
+                .enqueue(new Callback<List<User>>() {
 
-                    for (User u : response.body()) {
-                        sb.append("ID: ").append(u.getId())
-                                .append(" | ").append(u.getName())
-                                .append(" | ").append(u.getRole());
-
-                        if (u.isCoordinator()) {
-                            sb.append(" [BOSS]");
-                            if (selectedCoordinatorId == null) {
-                                selectedCoordinatorId = u.getId();
-                            }
+                    @Override
+                    public void onResponse(
+                            Call<List<User>> call,
+                            Response<List<User>> response
+                    ) {
+                        if (!response.isSuccessful()) {
+                            showErrorResponse(response);
+                            return;
                         }
 
-                        if (u.isWorker()) {
-                            sb.append(" [WORKER]");
-                            if (selectedWorkerId == null) {
-                                selectedWorkerId = u.getId();
-                            }
+                        List<User> users = response.body();
+
+                        if (users == null) {
+                            showResult(
+                                    "The server returned an empty user response."
+                            );
+                            return;
                         }
 
-                        sb.append("\n");
+                        selectedWorkerId = null;
+                        selectedCoordinatorId = null;
+
+                        StringBuilder result =
+                                new StringBuilder("=== USERS ===\n");
+
+                        for (User user : users) {
+                            if (user == null) {
+                                continue;
+                            }
+
+                            result.append("ID: ")
+                                    .append(user.getId())
+                                    .append(" | ")
+                                    .append(
+                                            safeText(
+                                                    user.getName(),
+                                                    "Unknown user"
+                                            )
+                                    )
+                                    .append(" | ")
+                                    .append(
+                                            user.getRole() != null
+                                                    ? user.getRole()
+                                                    : "NO ROLE"
+                                    );
+
+                            if (user.isCoordinator()) {
+                                result.append(" [BOSS]");
+
+                                if (selectedCoordinatorId == null) {
+                                    selectedCoordinatorId =
+                                            user.getId();
+                                }
+                            }
+
+                            if (user.isWorker()) {
+                                result.append(" [WORKER]");
+
+                                if (selectedWorkerId == null) {
+                                    selectedWorkerId =
+                                            user.getId();
+                                }
+                            }
+
+                            result.append("\n");
+                        }
+
+                        result.append("\nSelected workerId: ")
+                                .append(selectedWorkerId);
+
+                        result.append("\nSelected coordinatorId: ")
+                                .append(selectedCoordinatorId);
+
+                        if (selectedWorkerId == null) {
+                            result.append(
+                                    "\nWarning: no worker was found."
+                            );
+                        }
+
+                        if (selectedCoordinatorId == null) {
+                            result.append(
+                                    "\nWarning: no coordinator was found."
+                            );
+                        }
+
+                        showResult(result.toString());
                     }
 
-                    sb.append("\nSelected workerId: ").append(selectedWorkerId);
-                    sb.append("\nSelected coordinatorId: ").append(selectedCoordinatorId);
-
-                    showResult(sb.toString());
-                } else {
-                    showResult("Error: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<User>> call, Throwable t) {
-                showResult("Failed: " + t.getMessage());
-            }
-        });
+                    @Override
+                    public void onFailure(
+                            Call<List<User>> call,
+                            Throwable throwable
+                    ) {
+                        showResult(
+                                "Load users failed: "
+                                        + getFailureMessage(throwable)
+                        );
+                    }
+                });
     }
 
-    // 2. Load all jobs
+    // 2. Load jobs and select the first open job with space.
     private void loadJobs() {
         showLoading();
 
-        RetrofitClient.getApiService().getAllJobs().enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<List<Job>> call, Response<List<Job>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    selectedJobId = null;
-                    lastSignupId = null;
-                    StringBuilder sb = new StringBuilder("=== JOBS ===\n");
+        RetrofitClient.getApiService()
+                .getAllJobs()
+                .enqueue(new Callback<List<Job>>() {
 
-                    for (Job j : response.body()) {
-                        if (selectedJobId == null && j.hasAvailableSlots()) {
-                            selectedJobId = j.getId();
+                    @Override
+                    public void onResponse(
+                            Call<List<Job>> call,
+                            Response<List<Job>> response
+                    ) {
+                        if (!response.isSuccessful()) {
+                            showErrorResponse(response);
+                            return;
                         }
 
-                        sb.append("ID: ").append(j.getId())
-                                .append(" | ").append(j.getTitle())
-                                .append(" | ").append(j.getLocation())
-                                .append(" | Slots: ").append(j.getFilledSlots()).append("/").append(j.getTotalSlots());
+                        List<Job> jobs = response.body();
 
-                        if (j.isOpen()) sb.append(" [OPEN]");
-                        if (j.isFull()) sb.append(" [FULL]");
-                        if (j.hasAvailableSlots()) sb.append(" [AVAILABLE]");
+                        if (jobs == null) {
+                            showResult(
+                                    "The server returned an empty job response."
+                            );
+                            return;
+                        }
 
-                        sb.append("\n");
+                        selectedJobId = null;
+
+                        StringBuilder result =
+                                new StringBuilder("=== JOBS ===\n");
+
+                        for (Job job : jobs) {
+                            if (job == null) {
+                                continue;
+                            }
+
+                            boolean usableJob =
+                                    job.isOpen()
+                                            && job.hasAvailableSlots();
+
+                            if (selectedJobId == null && usableJob) {
+                                selectedJobId = job.getId();
+                            }
+
+                            result.append("ID: ")
+                                    .append(job.getId())
+                                    .append(" | ")
+                                    .append(
+                                            safeText(
+                                                    job.getTitle(),
+                                                    "Untitled job"
+                                            )
+                                    )
+                                    .append(" | ")
+                                    .append(
+                                            safeText(
+                                                    job.getLocation(),
+                                                    "No location"
+                                            )
+                                    )
+                                    .append(" | Slots: ")
+                                    .append(job.getFilledSlots())
+                                    .append("/")
+                                    .append(job.getTotalSlots());
+
+                            if (job.isOpen()) {
+                                result.append(" [OPEN]");
+                            }
+
+                            if (job.isFull()) {
+                                result.append(" [FULL]");
+                            }
+
+                            if (job.hasAvailableSlots()) {
+                                result.append(" [AVAILABLE]");
+                            }
+
+                            result.append("\n");
+                        }
+
+                        result.append("\nSelected jobId: ")
+                                .append(selectedJobId);
+
+                        if (selectedJobId == null) {
+                            result.append(
+                                    "\nNo open job with available slots was found."
+                            );
+                        }
+
+                        showResult(result.toString());
                     }
 
-                    sb.append("\nSelected jobId: ").append(selectedJobId);
-
-                    showResult(sb.toString());
-                } else {
-                    showResult("Error: " + response.code());
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Job>> call, Throwable t) {
-                showResult("Failed: " + t.getMessage());
-            }
-        });
+                    @Override
+                    public void onFailure(
+                            Call<List<Job>> call,
+                            Throwable throwable
+                    ) {
+                        showResult(
+                                "Load jobs failed: "
+                                        + getFailureMessage(throwable)
+                        );
+                    }
+                });
     }
 
-    // 3. Worker signs up for a job
+    // 3. Create one PENDING signup.
     private void signUp() {
-        if (selectedWorkerId == null || selectedJobId == null) {
-            showResult("Load Users and Load Jobs first. Missing workerId or jobId.");
+        if (selectedWorkerId == null) {
+            showResult(
+                    "No worker selected. Press Load Users first."
+            );
+            return;
+        }
+
+        if (selectedJobId == null) {
+            showResult(
+                    "No job selected. Press Load Jobs first."
+            );
             return;
         }
 
         showLoading();
 
-        RetrofitClient.getApiService().signUp(selectedWorkerId, selectedJobId).enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<JobSignup> call, Response<JobSignup> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    JobSignup s = response.body();
-                    lastSignupId = s.getId();
+        RetrofitClient.getApiService()
+                .signUp(
+                        selectedWorkerId,
+                        selectedJobId
+                )
+                .enqueue(new Callback<JobSignup>() {
 
-                    StringBuilder sb = new StringBuilder("=== SIGNUP CREATED ===\n");
-                    sb.append("Signup ID: ").append(s.getId())
-                            .append("\nStatus: ").append(s.getStatus());
+                    @Override
+                    public void onResponse(
+                            Call<JobSignup> call,
+                            Response<JobSignup> response
+                    ) {
+                        if (!response.isSuccessful()) {
+                            showErrorResponse(response);
+                            return;
+                        }
 
-                    if (s.isPending()) sb.append(" [PENDING]");
-                    if (s.isApproved()) sb.append(" [APPROVED]");
+                        JobSignup signup = response.body();
 
-                    sb.append("\nWorker: ").append(s.getWorker().getName())
-                            .append("\nJob: ").append(s.getJob().getTitle())
-                            .append("\n\nSaved lastSignupId: ").append(lastSignupId);
+                        if (signup == null) {
+                            showResult(
+                                    "Signup request succeeded, "
+                                            + "but the response body was empty."
+                            );
+                            return;
+                        }
 
-                    showResult(sb.toString());
-                } else {
-                    showErrorResponse(response);
-                }
-            }
+                        lastSignupId = signup.getId();
 
-            @Override
-            public void onFailure(Call<JobSignup> call, Throwable t) {
-                showResult("Failed: " + t.getMessage());
-            }
-        });
+                        StringBuilder result =
+                                new StringBuilder(
+                                        "=== SIGNUP CREATED ===\n"
+                                );
+
+                        result.append("Signup ID: ")
+                                .append(signup.getId());
+
+                        result.append("\nStatus: ")
+                                .append(
+                                        signup.getStatus() != null
+                                                ? signup.getStatus()
+                                                : "UNKNOWN"
+                                );
+
+                        if (signup.isPending()) {
+                            result.append(" [PENDING]");
+                        }
+
+                        if (signup.isApproved()) {
+                            result.append(" [APPROVED]");
+                        }
+
+                        if (signup.getWorker() != null) {
+                            result.append("\nWorker: ")
+                                    .append(
+                                            safeText(
+                                                    signup
+                                                            .getWorker()
+                                                            .getName(),
+                                                    "Unknown worker"
+                                            )
+                                    );
+                        }
+
+                        if (signup.getJob() != null) {
+                            result.append("\nJob: ")
+                                    .append(
+                                            safeText(
+                                                    signup
+                                                            .getJob()
+                                                            .getTitle(),
+                                                    "Unknown job"
+                                            )
+                                    );
+                        }
+
+                        result.append("\n\nSaved lastSignupId: ")
+                                .append(lastSignupId);
+
+                        showResult(result.toString());
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<JobSignup> call,
+                            Throwable throwable
+                    ) {
+                        showResult(
+                                "Signup request failed: "
+                                        + getFailureMessage(throwable)
+                        );
+                    }
+                });
     }
 
-    private void showErrorResponse(Response<?> response) {
-        try {
-            String errorBody = response.errorBody() != null
-                    ? response.errorBody().string()
-                    : "Unknown error";
-
-            showResult("Error " + response.code() + ":\n" + errorBody);
-        } catch (Exception e) {
-            showResult("Error: " + response.code());
-        }
-    }
-
-    // 4. Coordinator approves signup
+    // 4. Approve the most recently created signup.
     private void approveSignup() {
-        if (lastSignupId == null || selectedCoordinatorId == null) {
+        if (lastSignupId == null) {
             showResult(
-                    "Create a signup first and make sure users are loaded."
+                    "No signup selected. Create a signup first."
+            );
+            return;
+        }
+
+        if (selectedCoordinatorId == null) {
+            showResult(
+                    "No coordinator selected. Press Load Users first."
             );
             return;
         }
@@ -224,16 +442,79 @@ public class MainActivity extends AppCompatActivity {
                 .approveSignup(
                         lastSignupId,
                         selectedCoordinatorId,
-                        "Approved by coordinator"
+                        "Approved from Android test screen"
                 )
-                .enqueue(new Callback<>() {
+                .enqueue(new Callback<JobSignup>() {
 
                     @Override
                     public void onResponse(
                             Call<JobSignup> call,
                             Response<JobSignup> response
                     ) {
-                        // Keep your existing response code here.
+                        if (!response.isSuccessful()) {
+                            showErrorResponse(response);
+                            return;
+                        }
+
+                        JobSignup signup = response.body();
+
+                        if (signup == null) {
+                            showResult(
+                                    "Approval succeeded, "
+                                            + "but the response body was empty."
+                            );
+                            return;
+                        }
+
+                        StringBuilder result =
+                                new StringBuilder(
+                                        "=== SIGNUP APPROVED ===\n"
+                                );
+
+                        result.append("Signup ID: ")
+                                .append(signup.getId());
+
+                        result.append("\nStatus: ")
+                                .append(
+                                        signup.getStatus() != null
+                                                ? signup.getStatus()
+                                                : "UNKNOWN"
+                                );
+
+                        if (signup.isApproved()) {
+                            result.append(" [APPROVED]");
+                        }
+
+                        if (signup.getActionedBy() != null) {
+                            result.append("\nApproved by: ")
+                                    .append(
+                                            safeText(
+                                                    signup
+                                                            .getActionedBy()
+                                                            .getName(),
+                                                    "Coordinator"
+                                            )
+                                    );
+                        }
+
+                        if (signup.getActionReason() != null
+                                && !signup
+                                        .getActionReason()
+                                        .trim()
+                                        .isEmpty()) {
+
+                            result.append("\nReason: ")
+                                    .append(
+                                            signup.getActionReason()
+                                    );
+                        }
+
+                        if (signup.getUpdatedAt() != null) {
+                            result.append("\nUpdated at: ")
+                                    .append(signup.getUpdatedAt());
+                        }
+
+                        showResult(result.toString());
                     }
 
                     @Override
@@ -241,52 +522,201 @@ public class MainActivity extends AppCompatActivity {
                             Call<JobSignup> call,
                             Throwable throwable
                     ) {
-                        showResult("Failed: " + throwable.getMessage());
+                        showResult(
+                                "Approval request failed: "
+                                        + getFailureMessage(throwable)
+                        );
                     }
                 });
     }
 
-    // 5. Coordinator marks attendance
-// 5. Coordinator marks attendance
+    // 5. Record COMPLETED attendance for the approved signup.
     private void markAttend() {
-        if (lastSignupId == null || selectedCoordinatorId == null) {
-            showResult("Approve a signup first and make sure users are loaded.");
+        if (lastSignupId == null) {
+            showResult(
+                    "No signup selected. Create and approve a signup first."
+            );
+            return;
+        }
+
+        if (selectedCoordinatorId == null) {
+            showResult(
+                    "No coordinator selected. Press Load Users first."
+            );
             return;
         }
 
         showLoading();
 
-        RetrofitClient.getApiService().markAttended(lastSignupId, selectedCoordinatorId).enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<JobAttendance> call, Response<JobAttendance> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    JobAttendance a = response.body();
+        RetrofitClient.getApiService()
+                .markAttendance(
+                        lastSignupId,
+                        selectedCoordinatorId,
+                        "COMPLETED",
+                        0,
+                        "Recorded from Android test screen"
+                )
+                .enqueue(new Callback<JobAttendance>() {
 
-                    StringBuilder sb = new StringBuilder("=== ATTENDANCE ===\n");
-                    sb.append("Attendance ID: ").append(a.getId())
-                            .append("\nStatus: ").append(a.getStatus());
+                    @Override
+                    public void onResponse(
+                            Call<JobAttendance> call,
+                            Response<JobAttendance> response
+                    ) {
+                        if (!response.isSuccessful()) {
+                            showErrorResponse(response);
+                            return;
+                        }
 
-                    if (a.isCompleted()) sb.append(" [COMPLETED]");
-                    if (a.isLate()) sb.append(" [LATE]");
-                    if (a.isNoShow()) sb.append(" [NO_SHOW]");
-                    if (a.hasLateMinutes()) sb.append(" (Late: ").append(a.getLateMinutes()).append(" min)");
+                        JobAttendance attendance =
+                                response.body();
 
-                    if (a.getRecordedBy() != null) {
-                        sb.append("\nRecorded by: ").append(a.getRecordedBy().getName());
+                        if (attendance == null) {
+                            showResult(
+                                    "Attendance request succeeded, "
+                                            + "but the response body was empty."
+                            );
+                            return;
+                        }
+
+                        StringBuilder result =
+                                new StringBuilder(
+                                        "=== ATTENDANCE RECORDED ===\n"
+                                );
+
+                        result.append("Attendance ID: ")
+                                .append(attendance.getId());
+
+                        result.append("\nStatus: ")
+                                .append(
+                                        attendance.getStatus() != null
+                                                ? attendance.getStatus()
+                                                : "UNKNOWN"
+                                );
+
+                        if (attendance.isCompleted()) {
+                            result.append(" [COMPLETED]");
+                        }
+
+                        if (attendance.isLate()) {
+                            result.append(" [LATE]");
+                        }
+
+                        if (attendance.isNoShow()) {
+                            result.append(" [NO_SHOW]");
+                        }
+
+                        if (attendance.hasLateMinutes()) {
+                            result.append(" (Late: ")
+                                    .append(
+                                            attendance.getLateMinutes()
+                                    )
+                                    .append(" min)");
+                        }
+
+                        if (attendance.getRecordedBy() != null) {
+                            result.append("\nRecorded by: ")
+                                    .append(
+                                            safeText(
+                                                    attendance
+                                                            .getRecordedBy()
+                                                            .getName(),
+                                                    "Coordinator"
+                                            )
+                                    );
+                        }
+
+                        if (attendance.getWorker() != null) {
+                            result.append("\nWorker: ")
+                                    .append(
+                                            safeText(
+                                                    attendance
+                                                            .getWorker()
+                                                            .getName(),
+                                                    "Unknown worker"
+                                            )
+                                    );
+                        }
+
+                        if (attendance.getJob() != null) {
+                            result.append("\nJob: ")
+                                    .append(
+                                            safeText(
+                                                    attendance
+                                                            .getJob()
+                                                            .getTitle(),
+                                                    "Unknown job"
+                                            )
+                                    );
+                        }
+
+                        if (attendance.getRecordedAt() != null) {
+                            result.append("\nRecorded at: ")
+                                    .append(
+                                            attendance.getRecordedAt()
+                                    );
+                        }
+
+                        showResult(result.toString());
                     }
 
-                    sb.append("\nRecorded at: ").append(a.getRecordedAt());
+                    @Override
+                    public void onFailure(
+                            Call<JobAttendance> call,
+                            Throwable throwable
+                    ) {
+                        showResult(
+                                "Attendance request failed: "
+                                        + getFailureMessage(throwable)
+                        );
+                    }
+                });
+    }
 
-                    showResult(sb.toString());
-                } else {
-                    showErrorResponse(response);
-                }
-            }
+    private void showErrorResponse(Response<?> response) {
+        try {
+            String errorBody = response.errorBody() != null
+                    ? response.errorBody().string()
+                    : "Unknown server error";
 
-            @Override
-            public void onFailure(Call<JobAttendance> call, Throwable t) {
-                showResult("Failed: " + t.getMessage());
-            }
-        });
+            showResult(
+                    "Error "
+                            + response.code()
+                            + ":\n"
+                            + errorBody
+            );
+
+        } catch (Exception exception) {
+            showResult(
+                    "Error "
+                            + response.code()
+                            + ": unable to read the error response."
+            );
+        }
+    }
+
+    private String getFailureMessage(Throwable throwable) {
+        if (throwable == null) {
+            return "Unknown network failure";
+        }
+
+        if (throwable.getMessage() == null
+                || throwable.getMessage().trim().isEmpty()) {
+
+            return throwable.getClass().getSimpleName();
+        }
+
+        return throwable.getMessage();
+    }
+
+    private String safeText(
+            String value,
+            String fallback
+    ) {
+        if (value == null || value.trim().isEmpty()) {
+            return fallback;
+        }
+
+        return value;
     }
 }
