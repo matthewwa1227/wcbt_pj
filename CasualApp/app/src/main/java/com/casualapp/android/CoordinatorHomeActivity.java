@@ -3,7 +3,6 @@ package com.casualapp.android;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
@@ -13,6 +12,7 @@ import com.casualapp.android.model.User;
 public class CoordinatorHomeActivity extends AppCompatActivity {
 
     private TextView tvWelcome;
+
     private AppCompatButton btnCreateJob;
     private AppCompatButton btnMyPostedJobs;
     private AppCompatButton btnAttendance;
@@ -23,30 +23,12 @@ public class CoordinatorHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_coordinator_home);
 
-        tvWelcome = findViewById(R.id.tvWelcome);
-        btnCreateJob = findViewById(R.id.btnCreateJob);
-        btnMyPostedJobs = findViewById(R.id.btnMyPostedJobs);
-        btnAttendance = findViewById(R.id.btnAttendance);
-        btnLogout = findViewById(R.id.btnLogout);
+        bindViews();
 
         User currentUser = UserSession.getCurrentUser();
 
-        if (currentUser == null || !currentUser.isCoordinator()) {
-            UserSession.clear();
-
-            Intent intent = new Intent(
-                    this,
-                    LoginActivity.class
-            );
-
-            intent.addFlags(
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            | Intent.FLAG_ACTIVITY_NEW_TASK
-                            | Intent.FLAG_ACTIVITY_CLEAR_TASK
-            );
-
-            startActivity(intent);
-            finish();
+        if (!isValidCoordinator(currentUser)) {
+            returnToLogin();
             return;
         }
 
@@ -54,44 +36,90 @@ public class CoordinatorHomeActivity extends AppCompatActivity {
                 "歡迎，" + currentUser.getName()
         );
 
+        configureButtons();
+    }
+
+    private void bindViews() {
+        tvWelcome = findViewById(R.id.tvWelcome);
+
+        btnCreateJob = findViewById(R.id.btnCreateJob);
+        btnMyPostedJobs = findViewById(R.id.btnMyPostedJobs);
+        btnAttendance = findViewById(R.id.btnAttendance);
+        btnLogout = findViewById(R.id.btnLogout);
+    }
+
+    private void configureButtons() {
         btnCreateJob.setOnClickListener(v ->
                 startActivity(
                         new Intent(
-                                this,
+                                CoordinatorHomeActivity.this,
                                 CreateJobActivity.class
                         )
                 )
         );
 
         btnMyPostedJobs.setOnClickListener(v ->
-                startActivity(
-                        new Intent(
-                                this,
-                                CoordinatorJobsActivity.class
-                        )
-                )
+                openCoordinatorJobs(false)
         );
 
         /*
-         * Attendance UI will be connected after the applicant-list
-         * screen is uploaded and inspected.
+         * Attendance currently uses the same posted-jobs screen.
+         *
+         * The coordinator selects a job, opens its applicant list,
+         * and records attendance for an approved worker.
          */
         btnAttendance.setOnClickListener(v ->
-                Toast.makeText(
-                        this,
-                        "Open a job and select an approved worker to record attendance",
-                        Toast.LENGTH_LONG
-                ).show()
+                openCoordinatorJobs(true)
         );
 
         btnLogout.setOnClickListener(v -> logout());
+    }
+
+    private void openCoordinatorJobs(
+            boolean attendanceMode
+    ) {
+        Intent intent = new Intent(
+                CoordinatorHomeActivity.this,
+                CoordinatorJobsActivity.class
+        );
+
+        intent.putExtra(
+                "attendanceMode",
+                attendanceMode
+        );
+
+        startActivity(intent);
+    }
+
+    private boolean isValidCoordinator(User user) {
+        return user != null
+                && user.getId() != null
+                && user.isCoordinator();
+    }
+
+    private void returnToLogin() {
+        UserSession.clear();
+
+        Intent intent = new Intent(
+                CoordinatorHomeActivity.this,
+                LoginActivity.class
+        );
+
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TASK
+        );
+
+        startActivity(intent);
+        finish();
     }
 
     private void logout() {
         UserSession.clear();
 
         Intent intent = new Intent(
-                this,
+                CoordinatorHomeActivity.this,
                 LoginActivity.class
         );
 

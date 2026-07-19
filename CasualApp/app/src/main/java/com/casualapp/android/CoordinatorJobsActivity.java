@@ -26,14 +26,14 @@ public class CoordinatorJobsActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView tvEmpty;
     private TextView btnBack;
-
+    private boolean attendanceMode;
     private boolean isLoading = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_coordinator_jobs);
-
+        attendanceMode = getIntent().getBooleanExtra("attendanceMode",false);
         jobsContainer = findViewById(R.id.jobsContainer);
         progressBar = findViewById(R.id.progressBar);
         tvEmpty = findViewById(R.id.tvEmpty);
@@ -136,7 +136,11 @@ public class CoordinatorJobsActivity extends AppCompatActivity {
                         + job.getTotalSlots()
                         + "\nStatus: "
                         + safeText(job.getStatus(), "UNKNOWN")
-                        + "\n\nTap to manage applicants";
+                        + (
+                                attendanceMode
+                                        ? "\n\nTap to manage attendance"
+                                        : "\n\nTap to manage applicants"
+                        );
 
         jobView.setText(text);
         jobView.setTextSize(17f);

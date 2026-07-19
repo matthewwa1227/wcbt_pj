@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -22,6 +23,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Back"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
             android:tint="#607e6f" />
 
@@ -39,17 +41,23 @@
             android:id="@+id/btnCreateJob"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="Create job"
+            android:focusable="true"
             android:gravity="center"
             android:text="+"
             android:textColor="#607e6f"
             android:textSize="28sp"
             android:textStyle="bold" />
+
     </LinearLayout>
 
     <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fillViewport="true"
         android:paddingHorizontal="16dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintTop_toBottomOf="@id/topBar">
@@ -70,7 +78,9 @@
                 android:drawablePadding="12dp"
                 android:drawableTint="@color/outline"
                 android:hint="搜尋特定場所或酒店..."
+                android:inputType="text"
                 android:paddingHorizontal="16dp"
+                android:singleLine="true"
                 android:textColor="@color/on_surface"
                 android:textColorHint="@color/outline"
                 android:textSize="14sp" />
@@ -92,6 +102,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="36dp"
                         android:background="@drawable/bg_filter_chip_selected"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
                         android:text="最新時間"
@@ -105,6 +117,8 @@
                         android:layout_height="36dp"
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_filter_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
                         android:text="最高時薪"
@@ -117,12 +131,16 @@
                         android:layout_height="36dp"
                         android:layout_marginStart="8dp"
                         android:background="@drawable/bg_filter_chip_unselected"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:gravity="center"
                         android:paddingHorizontal="16dp"
                         android:text="剩餘名額"
                         android:textColor="@color/on_secondary_container"
                         android:textSize="13sp" />
+
                 </LinearLayout>
+
             </HorizontalScrollView>
 
             <!-- Job List -->
@@ -135,6 +153,7 @@
                 android:nestedScrollingEnabled="false" />
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
     <!-- Bottom Navigation -->
@@ -149,18 +168,22 @@
         android:paddingHorizontal="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <!-- Tab 1: Active -->
+        <!-- Work List -->
         <LinearLayout
+            android:id="@+id/tabWorkList"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@drawable/bg_segment_selected"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Work list"
                 android:src="@android:drawable/ic_menu_agenda"
                 android:tint="#607e6f" />
 
@@ -171,19 +194,24 @@
                 android:textColor="#607e6f"
                 android:textSize="11sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
 
-        <!-- Tab 2 -->
+        <!-- Work History -->
         <LinearLayout
+            android:id="@+id/tabHistory"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Work history"
                 android:src="@android:drawable/ic_menu_recent_history"
                 android:tint="#6e7a73" />
 
@@ -193,19 +221,24 @@
                 android:text="工作記錄"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
 
-        <!-- Tab 3 -->
+        <!-- My Jobs -->
         <LinearLayout
+            android:id="@+id/tabMyJobs"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="My jobs"
                 android:src="@android:drawable/ic_menu_myplaces"
                 android:tint="#6e7a73" />
 
@@ -215,19 +248,24 @@
                 android:text="我的工作"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
 
-        <!-- Tab 4 -->
+        <!-- Profile -->
         <LinearLayout
+            android:id="@+id/tabProfile"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Profile"
                 android:src="@android:drawable/ic_menu_info_details"
                 android:tint="#6e7a73" />
 
@@ -237,7 +275,9 @@
                 android:text="個人檔案"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
