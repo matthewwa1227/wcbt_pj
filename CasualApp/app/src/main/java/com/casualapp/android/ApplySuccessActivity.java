@@ -13,6 +13,7 @@ import com.casualapp.android.model.Job;
 public class ApplySuccessActivity extends AppCompatActivity {
 
     private TextView tvJobDetail;
+
     private AppCompatButton btnMyJobs;
     private AppCompatButton btnBackHome;
 
@@ -21,28 +22,50 @@ public class ApplySuccessActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apply_success);
 
+        bindViews();
+        readApplicationResult();
+        configureButtons();
+    }
+
+    private void bindViews() {
         tvJobDetail = findViewById(R.id.tvJobDetail);
         btnMyJobs = findViewById(R.id.btnMyJobs);
         btnBackHome = findViewById(R.id.btnBackHome);
+    }
 
-        ImageButton btnBack = findViewById(R.id.btnBack);
-
-        Job job = (Job) getIntent().getSerializableExtra("job");
+    private void readApplicationResult() {
+        Job job = (Job) getIntent()
+                .getSerializableExtra("job");
 
         long signupId = getIntent().getLongExtra(
                 "signupId",
                 -1L
         );
 
-        String signupStatus = getIntent().getStringExtra(
-                "signupStatus"
+        String signupStatus = getIntent()
+                .getStringExtra("signupStatus");
+
+        bindResult(
+                job,
+                signupId,
+                signupStatus
+        );
+    }
+
+    private void configureButtons() {
+        ImageButton btnBack = findViewById(R.id.btnBack);
+
+        btnBack.setOnClickListener(v ->
+                openJobList()
         );
 
-        bindResult(job, signupId, signupStatus);
+        btnBackHome.setOnClickListener(v ->
+                openJobList()
+        );
 
-        btnBack.setOnClickListener(v -> openJobList());
-        btnBackHome.setOnClickListener(v -> openJobList());
-        btnMyJobs.setOnClickListener(v -> openMyApplications());
+        btnMyJobs.setOnClickListener(v ->
+                openMyJobs()
+        );
     }
 
     private void bindResult(
@@ -54,16 +77,23 @@ public class ApplySuccessActivity extends AppCompatActivity {
 
         if (job != null) {
             text.append(
-                    safeText(job.getLocation(), "地點待定")
+                    safeText(
+                            job.getLocation(),
+                            "地點待定"
+                    )
             );
 
             text.append(" - ");
 
             text.append(
-                    safeText(job.getTitle(), "未命名職位")
+                    safeText(
+                            job.getTitle(),
+                            "未命名職位"
+                    )
             );
 
             text.append("\n");
+
             text.append(
                     JobDateFormatter.formatFullDate(
                             job.getJobDate()
@@ -71,11 +101,14 @@ public class ApplySuccessActivity extends AppCompatActivity {
             );
 
             text.append(" ");
+
             text.append(
                     JobDateFormatter.formatStartTime(
                             job.getJobDate()
                     )
             );
+        } else {
+            text.append("申請已提交");
         }
 
         if (signupId >= 0) {
@@ -84,7 +117,9 @@ public class ApplySuccessActivity extends AppCompatActivity {
         }
 
         text.append("\n狀態：");
-        text.append(translateStatus(signupStatus));
+        text.append(
+                translateStatus(signupStatus)
+        );
 
         tvJobDetail.setText(text.toString());
     }
@@ -110,13 +145,16 @@ public class ApplySuccessActivity extends AppCompatActivity {
         }
     }
 
-    private void openMyApplications() {
+    private void openMyJobs() {
         Intent intent = new Intent(
-                this,
-                MyJobsActivity.class
+                ApplySuccessActivity.this,
+                MyJobsLandingActivity.class
         );
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+        );
 
         startActivity(intent);
         finish();
@@ -124,19 +162,27 @@ public class ApplySuccessActivity extends AppCompatActivity {
 
     private void openJobList() {
         Intent intent = new Intent(
-                this,
+                ApplySuccessActivity.this,
                 JobListActivity.class
         );
 
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(
+                Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP
+        );
 
         startActivity(intent);
         finish();
     }
 
-    private String safeText(String value, String fallback) {
-        return value == null || value.isBlank()
-                ? fallback
-                : value;
+    private String safeText(
+            String value,
+            String fallback
+    ) {
+        if (value == null || value.trim().isEmpty()) {
+            return fallback;
+        }
+
+        return value;
     }
 }

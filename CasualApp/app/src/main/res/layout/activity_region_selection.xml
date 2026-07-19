@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout 
+
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -18,7 +19,9 @@
         android:paddingHorizontal="16dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <View android:layout_width="24dp" android:layout_height="24dp" />
+        <View
+            android:layout_width="24dp"
+            android:layout_height="24dp" />
 
         <TextView
             android:layout_width="0dp"
@@ -33,14 +36,17 @@
         <ImageView
             android:layout_width="24dp"
             android:layout_height="24dp"
+            android:contentDescription="Notifications"
             android:src="@android:drawable/ic_popup_reminder"
             android:tint="#607e6f" />
+
     </LinearLayout>
 
     <!-- Scrollable Content -->
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:fillViewport="true"
         android:paddingHorizontal="16dp"
         app:layout_constraintBottom_toTopOf="@id/bottomNav"
         app:layout_constraintTop_toBottomOf="@id/topBar">
@@ -77,6 +83,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_job_card"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="16dp">
@@ -90,8 +98,10 @@
                     <ImageView
                         android:layout_width="28dp"
                         android:layout_height="28dp"
+                        android:contentDescription="Kowloon"
                         android:src="@android:drawable/ic_menu_myplaces"
                         android:tint="@color/primary" />
+
                 </LinearLayout>
 
                 <TextView
@@ -108,7 +118,10 @@
                     android:id="@+id/cbKowloon"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/primary" />
+                    android:buttonTint="@color/primary"
+                    android:clickable="false"
+                    android:focusable="false" />
+
             </LinearLayout>
 
             <!-- Region: New Territories -->
@@ -118,6 +131,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_job_card"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="16dp">
@@ -131,8 +146,10 @@
                     <ImageView
                         android:layout_width="28dp"
                         android:layout_height="28dp"
+                        android:contentDescription="New Territories"
                         android:src="@android:drawable/ic_menu_mapmode"
                         android:tint="@color/primary" />
+
                 </LinearLayout>
 
                 <TextView
@@ -149,7 +166,10 @@
                     android:id="@+id/cbNewTerritories"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/primary" />
+                    android:buttonTint="@color/primary"
+                    android:clickable="false"
+                    android:focusable="false" />
+
             </LinearLayout>
 
             <!-- Region: Hong Kong Island -->
@@ -159,6 +179,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_job_card"
+                android:clickable="true"
+                android:focusable="true"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:padding="16dp">
@@ -172,8 +194,10 @@
                     <ImageView
                         android:layout_width="28dp"
                         android:layout_height="28dp"
+                        android:contentDescription="Hong Kong Island"
                         android:src="@android:drawable/ic_menu_compass"
                         android:tint="@color/primary" />
+
                 </LinearLayout>
 
                 <TextView
@@ -190,10 +214,14 @@
                     android:id="@+id/cbHongKongIsland"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:buttonTint="@color/primary" />
+                    android:buttonTint="@color/primary"
+                    android:clickable="false"
+                    android:focusable="false" />
+
             </LinearLayout>
 
         </LinearLayout>
+
     </androidx.core.widget.NestedScrollView>
 
     <!-- Floating Next Button -->
@@ -223,17 +251,22 @@
         android:paddingHorizontal="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- Work List -->
         <LinearLayout
+            android:id="@+id/tabWorkList"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
             android:background="@drawable/bg_segment_selected"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Work list"
                 android:src="@android:drawable/ic_menu_agenda"
                 android:tint="#607e6f" />
 
@@ -244,18 +277,24 @@
                 android:textColor="#607e6f"
                 android:textSize="11sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
 
+        <!-- Work History -->
         <LinearLayout
+            android:id="@+id/tabHistory"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Work history"
                 android:src="@android:drawable/ic_menu_recent_history"
                 android:tint="#6e7a73" />
 
@@ -265,18 +304,24 @@
                 android:text="工作記錄"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
 
+        <!-- My Jobs -->
         <LinearLayout
+            android:id="@+id/tabMyJobs"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="My jobs"
                 android:src="@android:drawable/ic_menu_myplaces"
                 android:tint="#6e7a73" />
 
@@ -286,18 +331,24 @@
                 android:text="我的工作"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
 
+        <!-- Profile -->
         <LinearLayout
+            android:id="@+id/tabProfile"
             android:layout_width="0dp"
             android:layout_height="48dp"
             android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
             android:gravity="center"
             android:orientation="vertical">
 
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
+                android:contentDescription="Profile"
                 android:src="@android:drawable/ic_menu_info_details"
                 android:tint="#6e7a73" />
 
@@ -307,7 +358,9 @@
                 android:text="個人檔案"
                 android:textColor="#6e7a73"
                 android:textSize="11sp" />
+
         </LinearLayout>
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
