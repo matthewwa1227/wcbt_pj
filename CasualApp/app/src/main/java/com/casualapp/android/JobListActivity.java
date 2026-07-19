@@ -37,6 +37,7 @@ public class JobListActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+
         loadJobs();
     }
 

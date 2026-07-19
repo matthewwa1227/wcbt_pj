@@ -35,7 +35,19 @@
             
         <activity
             android:name=".CreateJobActivity"
-            android:exported="false" />    
+            android:exported="false" />
+
+        <activity android:name=".RegionSelectionActivity" />
+
+        <activity android:name=".JobDetailActivity" />
+
+        <activity android:name=".ConfirmApplyActivity" />
+
+        <activity android:name=".ApplySuccessActivity" />
+
+        <activity android:name=".MyJobsActivity" />
+
+        <activity android:name=".MyJobsLandingActivity" />
 
     </application>
 

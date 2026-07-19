@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.content.Intent;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -40,17 +41,26 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull JobViewHolder holder, int position) {
         Job job = jobs.get(position);
+        holder.tvDepartment.setText(job.getLocation() + " • " + job.getCoordinator().getName());
+        holder.tvJobTitle.setText(job.getTitle());
+        holder.tvUpdateDate.setText("日期: " + job.getJobDate().substring(0, 10) + " | 名額: " + job.getFilledSlots() + "/" + job.getTotalSlots());
 
-        holder.tvDepartment.setText(buildLocationText(job));
-        holder.tvJobTitle.setText(safeText(job.getTitle(), "未命名工作"));
-        holder.tvUpdateDate.setText(buildDateAndSlotsText(job));
+        // Status badge logic
+        if (job.isFull() || job.getFilledSlots() >= job.getTotalSlots() - 1) {
+            holder.tvStatusBadge.setText("即將滿額");
+            holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_red);
+            holder.tvStatusBadge.setTextColor(holder.itemView.getContext().getColor(android.R.color.holo_red_dark));
+        } else {
+            holder.tvStatusBadge.setText("熱烈招聘");
+            holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_badge_green);
+            holder.tvStatusBadge.setTextColor(holder.itemView.getContext().getColor(R.color.primary));
+        }
 
-        bindStatusBadge(holder, job);
-
+        // THIS IS THE FIX - open JobDetailActivity on click
         holder.itemView.setOnClickListener(v -> {
-            if (listener != null) {
-                listener.onJobClick(job);
-            }
+            Intent intent = new Intent(holder.itemView.getContext(), JobDetailActivity.class);
+            intent.putExtra("job", job);
+            holder.itemView.getContext().startActivity(intent);
         });
     }
 

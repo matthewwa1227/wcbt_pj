@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true">
+        <layer-list>
+            <item>
+                <shape android:shape="oval">
+                    <solid android:color="@color/primary" />
+                    <size android:width="24dp" android:height="24dp" />
+                </shape>
+            </item>
+            <item android:drawable="@android:drawable/ic_menu_close_clear_cancel"
+                android:left="4dp" android:top="4dp" android:right="4dp" android:bottom="4dp" />
+        </layer-list>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <stroke android:width="2dp" android:color="@color/outline_variant" />
+            <size android:width="24dp" android:height="24dp" />
+        </shape>
+    </item>
+</selector>
