@@ -38,4 +38,48 @@ public interface ApiService {
 
     @PUT("api/signups/{id}/attend")
     Call<JobAttendance> markAttended(@Path("id") Long id, @Query("recordedByUserId") Long recordedByUserId);
+
+    @GET("jobs/coordinator/{coordinatorId}")
+    Call<List<Job>> getJobsByCoordinator(
+            @Path("coordinatorId") Long coordinatorId
+    );
+
+    @GET("signups/worker/{workerId}")
+    Call<List<JobSignup>> getWorkerSignups(
+            @Path("workerId") Long workerId
+    );
+
+    @GET("signups/job/{jobId}")
+    Call<List<JobSignup>> getJobSignups(
+            @Path("jobId") Long jobId,
+            @Query("coordinatorId") Long coordinatorId
+    );
+
+    @GET("signups/coordinator/{coordinatorId}")
+    Call<List<JobSignup>> getCoordinatorSignups(
+            @Path("coordinatorId") Long coordinatorId
+    );
+
+    @PUT("signups/{signupId}/approve")
+    Call<JobSignup> approveSignup(
+            @Path("signupId") Long signupId,
+            @Query("coordinatorId") Long coordinatorId,
+            @Query("reason") String reason
+    );
+
+    @PUT("signups/{signupId}/reject")
+    Call<JobSignup> rejectSignup(
+            @Path("signupId") Long signupId,
+            @Query("coordinatorId") Long coordinatorId,
+            @Query("reason") String reason
+    );
+
+    @PUT("signups/{signupId}/attend")
+    Call<JobAttendance> markAttendance(
+            @Path("signupId") Long signupId,
+            @Query("recordedByUserId") Long recordedByUserId,
+            @Query("status") String status,
+            @Query("lateMinutes") Integer lateMinutes,
+            @Query("reason") String reason
+    );
 }

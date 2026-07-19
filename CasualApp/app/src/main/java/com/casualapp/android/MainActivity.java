@@ -212,41 +212,38 @@ public class MainActivity extends AppCompatActivity {
     // 4. Coordinator approves signup
     private void approveSignup() {
         if (lastSignupId == null || selectedCoordinatorId == null) {
-            showResult("Create a signup first and make sure users are loaded.");
+            showResult(
+                    "Create a signup first and make sure users are loaded."
+            );
             return;
         }
 
         showLoading();
 
-        RetrofitClient.getApiService().approveSignup(lastSignupId, selectedCoordinatorId).enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<JobSignup> call, Response<JobSignup> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    JobSignup s = response.body();
+        RetrofitClient.getApiService()
+                .approveSignup(
+                        lastSignupId,
+                        selectedCoordinatorId,
+                        "Approved by coordinator"
+                )
+                .enqueue(new Callback<>() {
 
-                    StringBuilder sb = new StringBuilder("=== APPROVED ===\n");
-                    sb.append("Signup ID: ").append(s.getId())
-                            .append("\nStatus: ").append(s.getStatus());
-
-                    if (s.isApproved()) sb.append(" [APPROVED]");
-
-                    if (s.getActionedBy() != null) {
-                        sb.append("\nApproved by: ").append(s.getActionedBy().getName());
+                    @Override
+                    public void onResponse(
+                            Call<JobSignup> call,
+                            Response<JobSignup> response
+                    ) {
+                        // Keep your existing response code here.
                     }
 
-                    sb.append("\nUpdated at: ").append(s.getUpdatedAt());
-
-                    showResult(sb.toString());
-                } else {
-                    showErrorResponse(response);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<JobSignup> call, Throwable t) {
-                showResult("Failed: " + t.getMessage());
-            }
-        });
+                    @Override
+                    public void onFailure(
+                            Call<JobSignup> call,
+                            Throwable throwable
+                    ) {
+                        showResult("Failed: " + throwable.getMessage());
+                    }
+                });
     }
 
     // 5. Coordinator marks attendance

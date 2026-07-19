@@ -36,7 +36,14 @@
         <activity
             android:name=".CreateJobActivity"
             android:exported="false" />
+        <activity
+            android:name=".CoordinatorHomeActivity"
+            android:exported="false" />
 
+        <activity
+            android:name=".CoordinatorJobsActivity"
+            android:exported="false" />
+            
         <activity android:name=".RegionSelectionActivity" />
 
         <activity android:name=".JobDetailActivity" />
