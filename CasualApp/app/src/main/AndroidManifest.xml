@@ -43,6 +43,10 @@
         <activity
             android:name=".CoordinatorJobsActivity"
             android:exported="false" />
+
+        <activity
+            android:name=".CoordinatorApplicantsActivity"
+            android:exported="false" />
             
         <activity android:name=".RegionSelectionActivity" />
 
