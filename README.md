@@ -1,78 +1,159 @@
 # CasualApp
 
-Full-stack casual worker coordination platform.
-Backend: Spring Boot 4.1.0 + PostgreSQL (Docker)
-Frontend: Android (Java + Retrofit)
+CasualApp is a full-stack casual-worker coordination platform for hotels and other workplaces that rely on temporary staff.
 
-## Tech Stack
+The product is intended to connect the complete operational workflow:
 
-| Layer | Technology |
-|-------|------------|
-| Backend | Spring Boot 4.1.0, Java 17, Spring Data JPA |
-| Database | PostgreSQL 16 (Docker) |
-| API | REST (JSON) |
-| Android | Java, Retrofit 2.9.0, Gson |
-| Build | Maven (backend), Gradle (Android) |
+> A coordinator publishes a shift, a worker applies, the coordinator approves the application, attendance is recorded, and the resulting work history can be turned into schedule and performance information.
 
-## Project Structure
+The current client applications are:
 
+- **Backend:** Spring Boot, PostgreSQL, Spring Data JPA and Docker
+- **Mobile client:** Native Android using Java, XML, Retrofit and Gson
+
+## Current Progress
+
+The core development flow is functioning in the local development environment.
+
+### Worker flow
+
+- Phone-number prototype login
+- Region-selection screen
+- Backend-connected job list
+- Job-detail and shift-selection screens
+- Application confirmation and submission
+- Application-success screen
+- My Jobs landing screen
+- Worker application list
+- My Schedule screen with a monthly calendar
+- Upcoming and completed shift sections
+- Bottom-navigation handling on the main worker screens
+- Meaningful placeholder messages for unfinished sections
+
+### Coordinator flow
+
+- Coordinator prototype login
+- Coordinator home screen
+- Job creation
+- Posted-job list
+- Applicant list
+- Approve and reject actions
+- Attendance recording for completed, late and no-show cases
+- Coordinator ownership and role checks in the backend
+
+### Backend
+
+- PostgreSQL database through Docker
+- User, role, job, signup and attendance models
+- Additional EventLog, Venue, WorkerProfile and JobRole models
+- JPA repositories
+- REST controllers for authentication, users, jobs, signups and worker schedules
+- Structured API-error handling
+- Duplicate-signup conflict handling
+- Development seed data
+- Worker Schedule service and response DTOs
+- Persistence ports, filters and factory scaffolding
+
+### Current end-to-end demo flow
+
+```text
+Coordinator creates a job
+→ Worker views and applies for the job
+→ Coordinator views the applicant
+→ Coordinator approves or rejects the application
+→ Coordinator records attendance
+→ Worker views the updated application and schedule information
 ```
+
+### Known prototype limitations
+
+- Login currently uses a phone number without a password.
+- Public self-registration is not implemented yet.
+- The current job model does not fully separate shift start and end time.
+- Performance dashboards and Excel exports are the next major demo feature.
+- Some secondary UI tabs intentionally show a development placeholder.
+- `MainActivity` remains a legacy backend smoke-test screen and should be hidden from the final demo path.
+
+## Current Test Users
+
+The development seed data currently includes:
+
+| User | Role | Purpose |
+|---|---|---|
+| Boss Chan | Coordinator | Create jobs, manage applicants and record attendance |
+| Worker A | Worker | Primary worker-flow testing |
+| Worker B | Worker | Secondary worker-flow testing |
+| Admin Test | Admin | Administrative-role testing |
+
+The exact phone numbers and database IDs are defined by `backend/src/main/java/com/casualapp/backend/config/DevDataSeeder.java`. Do not document hard-coded IDs because they can change after a database reset.
+
+## Simplified Project Structure
+
+Generated folders, IDE caches, build outputs and dependency metadata are intentionally omitted.
+
+```text
 wcbt_pj/
-├── backend/                 # Spring Boot application
-│   ├── src/main/java/...
-│   │   ├── model/          # User, Job, JobSignup, Role, JobStatus, SignupStatus
-│   │   ├── repository/       # JPA Repositories
-│   │   ├── controller/       # REST Controllers
-│   │   └── config/           # CORS configuration
-│   └── docker-compose.yml    # Local PostgreSQL
-└── android/                 # Android Studio project
-    ├── app/src/main/java/...
-    │   ├── model/            # Retrofit data models
-    │   └── network/          # ApiService, RetrofitClient
-    └── res/layout/           # XML layouts
+├── README.md
+├── structure.txt
+├── documents/
+│   ├── README.md
+│   ├── DEVELOPMENT_COMMANDS.md
+│   ├── API_REFERENCE.md
+│   ├── ARCHITECTURE.md
+│   ├── DEMO_AND_TESTING.md
+│   ├── ROADMAP.md
+│   ├── DTO_REFACTORING.md
+│   ├── DATA_MODEL_AND_SEEDING.md
+│   └── UI_SCREEN_MAP.md
+│
+├── backend/
+│   ├── docker-compose.yml
+│   ├── pom.xml
+│   ├── mvnw
+│   ├── mvnw.cmd
+│   └── src/
+│       ├── main/java/com/casualapp/backend/
+│       │   ├── config/
+│       │   ├── controller/
+│       │   ├── dto/
+│       │   ├── model/
+│       │   ├── persistence/
+│       │   ├── repository/
+│       │   ├── service/
+│       │   └── BackendApplication.java
+│       ├── main/resources/
+│       └── test/
+│
+└── CasualApp/
+    ├── build.gradle
+    ├── settings.gradle
+    ├── gradlew
+    ├── gradlew.bat
+    └── app/src/main/
+        ├── AndroidManifest.xml
+        ├── java/com/casualapp/android/
+        │   ├── activities and adapters
+        │   ├── model/
+        │   └── network/
+        └── res/
+            ├── layout/
+            ├── drawable/
+            ├── mipmap-*/
+            ├── values/
+            └── xml/
 ```
 
-## Backend Setup
+## Project Documentation
 
-```bash
-cd backend
-docker-compose up -d
-./mvnw spring-boot:run
-```
+Detailed documentation is kept in [`documents/`](documents/README.md):
 
-- Backend runs on `http://localhost:8081`
-- PostgreSQL runs on `localhost:5433` (Docker, avoids Windows native Postgres conflict)
+- [Development commands](documents/DEVELOPMENT_COMMANDS.md)
+- [API reference](documents/API_REFERENCE.md)
+- [Architecture](documents/ARCHITECTURE.md)
+- [Demo and testing guide](documents/DEMO_AND_TESTING.md)
+- [Roadmap](documents/ROADMAP.md)
+- [DTO refactoring plan](documents/DTO_REFACTORING.md)
+- [Data model and seed-data notes](documents/DATA_MODEL_AND_SEEDING.md)
+- [Android UI screen map](documents/UI_SCREEN_MAP.md)
 
-## Android Setup
-
-1. Open `android/` folder in Android Studio
-2. Sync Gradle
-3. Run on emulator (uses `10.0.2.2` to reach backend)
-
-## Verified Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/users` | List all users |
-| POST | `/api/users` | Create user |
-| GET | `/api/jobs` | List all jobs |
-| POST | `/api/jobs?coordinatorId={id}` | Create job |
-| GET | `/api/signups` | List all signups |
-| POST | `/api/signups?workerId={id}&jobId={id}` | Worker signs up |
-| PUT | `/api/signups/{id}/attend` | Mark as attended |
-
-## Current Status
-
-- [x] Spring Boot backend with PostgreSQL
-- [x] User, Job, JobSignup entities with JPA
-- [x] REST API with CORS enabled
-- [x] Android Retrofit client connected
-- [x] End-to-end test: Android fetches users from backend
-
-## Next Steps
-
-- [ ] RecyclerView to list jobs
-- [ ] Sign-up flow (worker applies to job)
-- [ ] Coordinator dashboard (post jobs, view applicants)
-- [ ] Authentication (phone + password)
-- [ ] Deploy backend to cloud
+`structure.txt` is retained only as a raw reference snapshot and is not duplicated inside the documentation.
