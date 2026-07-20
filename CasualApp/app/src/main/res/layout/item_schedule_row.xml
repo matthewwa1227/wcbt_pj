@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="8dp"
+    android:background="@drawable/bg_schedule_row"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="14dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvScheduleJobTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="九龍酒店1 - 部門4 - 職位"
+            android:textColor="#1A1C1B"
+            android:textSize="15sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvScheduleDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="29/1/2025"
+            android:textColor="#55615A"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvScheduleStatus"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:text="已批准"
+            android:textColor="#456254"
+            android:textSize="12sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvScheduleTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:gravity="end"
+        android:text="11:30 - 23:30"
+        android:textColor="#1A1C1B"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

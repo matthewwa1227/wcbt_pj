@@ -48,13 +48,14 @@ public class MyJobsActivity extends AppCompatActivity {
 
         btnBack.setOnClickListener(v -> finish());
 
-        btnViewSchedule.setOnClickListener(v ->
-                Toast.makeText(
-                        this,
-                        "Schedule coming soon",
-                        Toast.LENGTH_SHORT
-                ).show()
+        btnViewSchedule.setOnClickListener(v -> {
+        Intent intent = new Intent(
+                MyJobsActivity.this,
+                MyScheduleActivity.class
         );
+
+        startActivity(intent);
+        });
 
         findViewById(R.id.tabWorkList).setOnClickListener(v -> {
             Intent intent = new Intent(

@@ -5,7 +5,7 @@ import com.casualapp.android.model.JobAttendance;
 import com.casualapp.android.model.JobSignup;
 import com.casualapp.android.model.LoginRequest;
 import com.casualapp.android.model.User;
-
+import com.casualapp.android.model.WorkerScheduleResponse;
 import java.util.List;
 
 import retrofit2.Call;
@@ -80,6 +80,11 @@ public interface ApiService {
     Call<List<JobSignup>> getCoordinatorSignups(
             @Path("coordinatorId") Long coordinatorId
     );
+
+    @GET("api/schedules/worker/{workerId}")
+    Call<WorkerScheduleResponse> getWorkerSchedule(
+            @Path("workerId") Long workerId
+        );
 
     @PUT("api/signups/{signupId}/approve")
     Call<JobSignup> approveSignup(

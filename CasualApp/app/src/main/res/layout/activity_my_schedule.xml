@@ -1,0 +1,389 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="#EFEADA"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="返回"
+            android:src="@android:drawable/ic_media_previous"
+            android:tint="#456254" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:text="我的行程"
+            android:textColor="#456254"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:text="CasualApp"
+            android:textColor="#456254"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+
+        <ImageButton
+            android:id="@+id/btnNotifications"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="通知"
+            android:src="@android:drawable/ic_popup_reminder"
+            android:tint="#456254" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvTodayHeader"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:background="#597668"
+        android:gravity="center"
+        android:text="2025年1月26日（今天）"
+        android:textColor="@android:color/white"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scheduleScrollView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        android:background="@android:color/white"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTodayHeader">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingTop="20dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="24dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_schedule_section_header"
+                android:gravity="center"
+                android:text="所有行程"
+                android:textColor="#456254"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_marginTop="16dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_schedule_card"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:background="#456254"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp">
+
+                    <ImageButton
+                        android:id="@+id/btnPreviousMonth"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="上一個月"
+                        android:src="@android:drawable/ic_media_previous"
+                        android:tint="@android:color/white" />
+
+                    <TextView
+                        android:id="@+id/tvMonthTitle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="一月 (2025)"
+                        android:textColor="@android:color/white"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btnNextMonth"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="下一個月"
+                        android:rotation="180"
+                        android:src="@android:drawable/ic_media_previous"
+                        android:tint="@android:color/white" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="日"
+                        android:textColor="@android:color/holo_red_dark" />
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="一" />
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="二" />
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="三" />
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="四" />
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="五" />
+
+                    <TextView
+                        style="@style/ScheduleWeekdayCell"
+                        android:text="六" />
+
+                </LinearLayout>
+
+                <GridLayout
+                    android:id="@+id/calendarGrid"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:alignmentMode="alignMargins"
+                    android:columnCount="7"
+                    android:padding="2dp"
+                    android:useDefaultMargins="false" />
+
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_schedule_section_header"
+                android:gravity="center"
+                android:text="將進行"
+                android:textColor="#456254"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvUpcomingEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:gravity="center"
+                android:text="暫時沒有即將進行的工作"
+                android:textColor="#727974"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/containerUpcoming"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_schedule_section_header"
+                android:gravity="center"
+                android:text="已完成"
+                android:textColor="#456254"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvCompletedEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="72dp"
+                android:gravity="center"
+                android:text="暫時沒有已完成的工作記錄"
+                android:textColor="#727974"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/containerCompleted"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/bottomNav"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        android:background="@drawable/bg_bottom_nav"
+        android:elevation="8dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingHorizontal="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:id="@+id/tabWorkList"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="工作列表"
+                android:src="@android:drawable/ic_menu_agenda"
+                android:tint="#6E7A73" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="工作列表"
+                android:textColor="#6E7A73"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabHistory"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="工作記錄"
+                android:src="@android:drawable/ic_menu_recent_history"
+                android:tint="#6E7A73" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="工作記錄"
+                android:textColor="#6E7A73"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabMyJobs"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_segment_selected"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="我的工作"
+                android:src="@android:drawable/ic_menu_myplaces"
+                android:tint="#607E6F" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="我的工作"
+                android:textColor="#607E6F"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/tabProfile"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:contentDescription="個人檔案"
+                android:src="@android:drawable/ic_menu_info_details"
+                android:tint="#6E7A73" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="個人檔案"
+                android:textColor="#6E7A73"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

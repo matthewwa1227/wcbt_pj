@@ -47,6 +47,10 @@
         <activity
             android:name=".CoordinatorApplicantsActivity"
             android:exported="false" />
+        
+        <activity
+            android:name=".MyScheduleActivity"
+            android:exported="false" />
             
         <activity android:name=".RegionSelectionActivity" />
 

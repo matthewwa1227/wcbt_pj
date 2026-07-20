@@ -48,13 +48,14 @@ public class MyJobsLandingActivity extends AppCompatActivity {
                 )
         );
 
-        rowSchedule.setOnClickListener(v ->
-                Toast.makeText(
-                        this,
-                        "我的行程 coming soon",
-                        Toast.LENGTH_SHORT
-                ).show()
+        findViewById(R.id.rowSchedule).setOnClickListener(v -> {
+        Intent intent = new Intent(
+                MyJobsLandingActivity.this,
+                MyScheduleActivity.class
         );
+
+        startActivity(intent);
+        });
 
         findViewById(R.id.tabWorkList).setOnClickListener(v -> {
             Intent intent = new Intent(
