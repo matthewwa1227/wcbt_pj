@@ -1,4 +1,4 @@
-package com.casualapp.backend.dto;
+package com.casualapp.backend.dto.schedule;
 
 public class WorkerScheduleItemResponse {
 

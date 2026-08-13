@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.casualapp.backend.dto.WorkerScheduleResponse;
+import com.casualapp.backend.dto.schedule.WorkerScheduleResponse;
 import com.casualapp.backend.service.WorkerScheduleService;
 
 @RestController

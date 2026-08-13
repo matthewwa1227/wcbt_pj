@@ -1,4 +1,4 @@
-package com.casualapp.backend.dto;
+package com.casualapp.backend.dto.schedule;
 
 import java.util.ArrayList;
 import java.util.List;

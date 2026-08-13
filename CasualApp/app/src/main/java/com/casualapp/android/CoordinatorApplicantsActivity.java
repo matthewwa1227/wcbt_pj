@@ -15,7 +15,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.casualapp.android.model.JobAttendance;
+import com.casualapp.android.model.AttendanceResponse;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
@@ -830,19 +830,19 @@ public class CoordinatorApplicantsActivity
                         reason
                 )
                 .enqueue(
-                        new Callback<JobAttendance>() {
+                        new Callback<AttendanceResponse>() {
 
-                            @Override
-                            public void onResponse(
-                                    Call<JobAttendance> call,
-                                    Response<JobAttendance> response
-                            ) {
+                        @Override
+                        public void onResponse(
+                                Call<AttendanceResponse> call,
+                                Response<AttendanceResponse> response
+                        ) {
 
                                 setActionLoading(false);
 
                                 if (!response.isSuccessful()) {
-                                    showErrorResponse(response);
-                                    return;
+                                showErrorResponse(response);
+                                return;
                                 }
 
                                 locallyRecordedAttendance.add(
@@ -857,13 +857,13 @@ public class CoordinatorApplicantsActivity
                                 ).show();
 
                                 loadApplicants();
-                            }
+                        }
 
-                            @Override
-                            public void onFailure(
-                                    Call<JobAttendance> call,
-                                    Throwable throwable
-                            ) {
+                        @Override
+                        public void onFailure(
+                                Call<AttendanceResponse> call,
+                                Throwable throwable
+                        ) {
 
                                 setActionLoading(false);
 
@@ -875,7 +875,7 @@ public class CoordinatorApplicantsActivity
                                                 ),
                                         Toast.LENGTH_LONG
                                 ).show();
-                            }
+                        }
                         }
                 );
     }

@@ -13,8 +13,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.casualapp.backend.dto.WorkerScheduleItemResponse;
-import com.casualapp.backend.dto.WorkerScheduleResponse;
+import com.casualapp.backend.dto.schedule.WorkerScheduleItemResponse;
+import com.casualapp.backend.dto.schedule.WorkerScheduleResponse;
 import com.casualapp.backend.model.Job;
 import com.casualapp.backend.model.JobAttendance;
 import com.casualapp.backend.model.JobSignup;

@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.casualapp.backend.dto.attendance.AttendanceResponse;
 import com.casualapp.backend.dto.signup.SignupResponse;
 import com.casualapp.backend.model.AttendanceStatus;
-import com.casualapp.backend.model.JobAttendance;
 import com.casualapp.backend.service.AttendanceService;
 import com.casualapp.backend.service.JobSignupService;
 
@@ -99,17 +99,17 @@ public class JobSignupController {
         );
     }
 
-    @PutMapping("/{signupId}/attend")
-    public JobAttendance markAttendance(
-            @PathVariable Long signupId,
-            @RequestParam Long recordedByUserId,
-            @RequestParam(defaultValue = "COMPLETED")
-            AttendanceStatus status,
-            @RequestParam(defaultValue = "0")
-            Integer lateMinutes,
-            @RequestParam(required = false)
-            String reason
-    ) {
+        @PutMapping("/{signupId}/attend")
+        public AttendanceResponse markAttendance(
+                @PathVariable Long signupId,
+                @RequestParam Long recordedByUserId,
+                @RequestParam(defaultValue = "COMPLETED")
+                AttendanceStatus status,
+                @RequestParam(defaultValue = "0")
+                Integer lateMinutes,
+                @RequestParam(required = false)
+                String reason
+        ) {
         return attendanceService.markAttendance(
                 signupId,
                 recordedByUserId,
@@ -117,5 +117,5 @@ public class JobSignupController {
                 lateMinutes,
                 reason
         );
-    }
+        }
 }

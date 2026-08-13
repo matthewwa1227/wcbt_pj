@@ -1,7 +1,7 @@
 package com.casualapp.android.network;
 
 import com.casualapp.android.model.Job;
-import com.casualapp.android.model.JobAttendance;
+import com.casualapp.android.model.AttendanceResponse;
 import com.casualapp.android.model.LoginRequest;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
@@ -110,12 +110,12 @@ public interface ApiService {
 
     // Attendance
 
-    @PUT("api/signups/{signupId}/attend")
-    Call<JobAttendance> markAttendance(
-            @Path("signupId") Long signupId,
-            @Query("recordedByUserId") Long recordedByUserId,
-            @Query("status") String status,
-            @Query("lateMinutes") Integer lateMinutes,
-            @Query("reason") String reason
-    );
+        @PUT("api/signups/{signupId}/attend")
+        Call<AttendanceResponse> markAttendance(
+                @Path("signupId") Long signupId,
+                @Query("recordedByUserId") Long recordedByUserId,
+                @Query("status") String status,
+                @Query("lateMinutes") Integer lateMinutes,
+                @Query("reason") String reason
+        );
 }

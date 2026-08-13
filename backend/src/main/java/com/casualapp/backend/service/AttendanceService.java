@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.casualapp.backend.controller.ApiException;
+import com.casualapp.backend.dto.attendance.AttendanceResponse;
 import com.casualapp.backend.model.AttendanceStatus;
 import com.casualapp.backend.model.Job;
 import com.casualapp.backend.model.JobAttendance;
@@ -34,29 +35,36 @@ public class AttendanceService {
     }
 
     @Transactional
-    public JobAttendance markAttendance(
+    public AttendanceResponse markAttendance(
             Long signupId,
             Long recordedByUserId,
             AttendanceStatus status,
             Integer lateMinutes,
             String reason
     ) {
+
         JobSignup signup = requireSignup(signupId);
 
         if (signup.getStatus() != SignupStatus.APPROVED) {
             throw new ApiException(
                     HttpStatus.CONFLICT,
                     "SIGNUP_NOT_APPROVED",
-                    "Signup must be approved before attendance can be recorded"
+                    "Attendance can only be recorded for approved applications"
             );
         }
 
-        User coordinator = requireCoordinator(recordedByUserId);
+        User coordinator = requireCoordinator(
+                recordedByUserId
+        );
 
         Job job = signup.getJob();
-        User worker = signup.getWorker();
 
-        requireCoordinatorOwnsJob(coordinator, job);
+        requireCoordinatorOwnsJob(
+                coordinator,
+                job
+        );
+
+        User worker = signup.getWorker();
 
         if (jobAttendanceRepository
                 .findByJobIdAndWorkerId(
@@ -68,46 +76,80 @@ public class AttendanceService {
             throw new ApiException(
                     HttpStatus.CONFLICT,
                     "ATTENDANCE_ALREADY_RECORDED",
-                    "Attendance already recorded for this worker and job"
+                    "Attendance has already been recorded for this worker and job"
             );
         }
 
-        int validatedLateMinutes =
-                validateLateMinutes(status, lateMinutes);
+        int normalizedLateMinutes =
+                normalizeLateMinutes(
+                        status,
+                        lateMinutes
+                );
 
-        JobAttendance attendance = new JobAttendance();
+        JobAttendance attendance =
+                new JobAttendance();
+
         attendance.setJob(job);
         attendance.setWorker(worker);
         attendance.setRecordedBy(coordinator);
         attendance.setStatus(status);
-        attendance.setLateMinutes(validatedLateMinutes);
+
+        attendance.setLateMinutes(
+                normalizedLateMinutes
+        );
+
         attendance.setNotes(
                 hasText(reason)
                         ? reason.trim()
-                        : defaultAttendanceNote(status)
+                        : defaultReason(
+                                status,
+                                normalizedLateMinutes
+                        )
         );
 
-        return jobAttendanceRepository.save(attendance);
+        JobAttendance savedAttendance =
+                jobAttendanceRepository.save(
+                        attendance
+                );
+
+        return toResponse(
+                savedAttendance,
+                signupId
+        );
     }
 
-    private JobSignup requireSignup(Long signupId) {
-        return jobSignupRepository.findById(signupId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "SIGNUP_NOT_FOUND",
-                        "Signup not found"
-                ));
+    private JobSignup requireSignup(
+            Long signupId
+    ) {
+
+        return jobSignupRepository
+                .findById(signupId)
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "SIGNUP_NOT_FOUND",
+                                "Signup not found"
+                        )
+                );
     }
 
-    private User requireCoordinator(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "COORDINATOR_NOT_FOUND",
-                        "Coordinator not found"
-                ));
+    private User requireCoordinator(
+            Long userId
+    ) {
 
-        if (user.getRole() != Role.COORDINATOR) {
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "COORDINATOR_NOT_FOUND",
+                                "Coordinator not found"
+                        )
+                );
+
+        if (user.getRole()
+                != Role.COORDINATOR) {
+
             throw new ApiException(
                     HttpStatus.FORBIDDEN,
                     "COORDINATOR_ROLE_REQUIRED",
@@ -122,7 +164,9 @@ public class AttendanceService {
             User coordinator,
             Job job
     ) {
-        if (job.getCoordinator() == null
+
+        if (job == null
+                || job.getCoordinator() == null
                 || job.getCoordinator().getId() == null
                 || !job.getCoordinator()
                         .getId()
@@ -136,13 +180,17 @@ public class AttendanceService {
         }
     }
 
-    private int validateLateMinutes(
+    private int normalizeLateMinutes(
             AttendanceStatus status,
             Integer lateMinutes
     ) {
-        int value = lateMinutes == null ? 0 : lateMinutes;
 
-        if (value < 0) {
+        int minutes =
+                lateMinutes == null
+                        ? 0
+                        : lateMinutes;
+
+        if (minutes < 0) {
             throw new ApiException(
                     HttpStatus.BAD_REQUEST,
                     "INVALID_LATE_MINUTES",
@@ -150,28 +198,115 @@ public class AttendanceService {
             );
         }
 
-        if (status == AttendanceStatus.LATE && value <= 0) {
-            throw new ApiException(
-                    HttpStatus.BAD_REQUEST,
-                    "INVALID_LATE_MINUTES",
-                    "Late minutes must be greater than zero for LATE attendance"
+        if (status == AttendanceStatus.LATE) {
+
+            if (minutes <= 0) {
+                throw new ApiException(
+                        HttpStatus.BAD_REQUEST,
+                        "INVALID_LATE_MINUTES",
+                        "Late attendance requires late minutes greater than zero"
+                );
+            }
+
+            return minutes;
+        }
+
+        return 0;
+    }
+
+    private String defaultReason(
+            AttendanceStatus status,
+            int lateMinutes
+    ) {
+
+        if (status == AttendanceStatus.LATE) {
+            return "Worker arrived "
+                    + lateMinutes
+                    + " minutes late";
+        }
+
+        if (status == AttendanceStatus.NO_SHOW) {
+            return "Worker did not attend";
+        }
+
+        return "Shift completed";
+    }
+
+    private AttendanceResponse toResponse(
+            JobAttendance attendance,
+            Long signupId
+    ) {
+
+        AttendanceResponse response =
+                new AttendanceResponse();
+
+        response.setId(
+                attendance.getId()
+        );
+
+        response.setSignupId(
+                signupId
+        );
+
+        if (attendance.getWorker() != null) {
+
+            response.setWorkerId(
+                    attendance
+                            .getWorker()
+                            .getId()
             );
         }
 
-        return status == AttendanceStatus.LATE ? value : 0;
+        if (attendance.getJob() != null) {
+
+            response.setJobId(
+                    attendance
+                            .getJob()
+                            .getId()
+            );
+        }
+
+        response.setStatus(
+                attendance.getStatus() == null
+                        ? null
+                        : attendance
+                                .getStatus()
+                                .name()
+        );
+
+        response.setLateMinutes(
+                attendance.getLateMinutes()
+        );
+
+        response.setNotes(
+                attendance.getNotes()
+        );
+
+        response.setRecordedAt(
+                attendance.getRecordedAt() == null
+                        ? null
+                        : attendance
+                                .getRecordedAt()
+                                .toString()
+        );
+
+        if (attendance.getRecordedBy()
+                != null) {
+
+            response.setRecordedByUserId(
+                    attendance
+                            .getRecordedBy()
+                            .getId()
+            );
+        }
+
+        return response;
     }
 
-    private String defaultAttendanceNote(
-            AttendanceStatus status
+    private boolean hasText(
+            String value
     ) {
-        return switch (status) {
-            case COMPLETED -> "Worker completed the shift";
-            case LATE -> "Worker arrived late";
-            case NO_SHOW -> "Worker did not attend";
-        };
-    }
-
-    private boolean hasText(String value) {
-        return value != null && !value.isBlank();
+        return value != null
+                && !value.isBlank();
     }
 }
