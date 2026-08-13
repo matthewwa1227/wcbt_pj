@@ -21,14 +21,18 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiErrorResponse> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<ApiErrorResponse> handleRuntimeException(
+            RuntimeException ex
+    ) {
         ApiErrorResponse body = new ApiErrorResponse(
-                HttpStatus.BAD_REQUEST.value(),
-                HttpStatus.BAD_REQUEST.getReasonPhrase(),
-                "BAD_REQUEST",
-                ex.getMessage()
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+                "INTERNAL_SERVER_ERROR",
+                "An unexpected server error occurred"
         );
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+        return ResponseEntity
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(body);
     }
 }
