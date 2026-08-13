@@ -11,8 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.casualapp.android.model.Job;
-import com.casualapp.android.model.JobSignup;
+import com.casualapp.android.model.SignupResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,14 +19,18 @@ import java.util.List;
 public class ApplicationAdapter
         extends RecyclerView.Adapter<ApplicationAdapter.ViewHolder> {
 
-    private final List<JobSignup> signups =
+    private final List<SignupResponse> signups =
             new ArrayList<>();
 
-    public ApplicationAdapter(List<JobSignup> initialSignups) {
+    public ApplicationAdapter(
+            List<SignupResponse> initialSignups
+    ) {
         replaceData(initialSignups);
     }
 
-    public void replaceData(List<JobSignup> newSignups) {
+    public void replaceData(
+            List<SignupResponse> newSignups
+    ) {
         signups.clear();
 
         if (newSignups != null) {
@@ -43,6 +46,7 @@ public class ApplicationAdapter
             @NonNull ViewGroup parent,
             int viewType
     ) {
+
         View view = LayoutInflater
                 .from(parent.getContext())
                 .inflate(
@@ -59,51 +63,70 @@ public class ApplicationAdapter
             @NonNull ViewHolder holder,
             int position
     ) {
-        JobSignup signup = signups.get(position);
-        Job job = signup.getJob();
 
-        String title = job != null
-                ? safeText(job.getTitle(), "Unknown Job")
-                : "Unknown Job";
+        SignupResponse signup =
+                signups.get(position);
 
-        String location = job != null
-                ? safeText(job.getLocation(), "Location TBD")
-                : "Location TBD";
-
-        String applicationId = signup.getId() != null
-                ? "  •  #" + signup.getId()
-                : "";
-
-        holder.tvJobTitle.setText(
-                location + " - " + title + applicationId
+        String title = safeText(
+                signup.getJobTitle(),
+                "Unknown Job"
         );
 
-        String jobDate = job != null
-                ? job.getJobDate()
-                : null;
+        String location = safeText(
+                signup.getJobLocation(),
+                "Location TBD"
+        );
+
+        String applicationId =
+                signup.getId() != null
+                        ? "  •  #" + signup.getId()
+                        : "";
+
+        holder.tvJobTitle.setText(
+                location
+                        + " - "
+                        + title
+                        + applicationId
+        );
+
+        String jobDate =
+                signup.getJobDate();
 
         holder.tvDate.setText(
-                JobDateFormatter.formatFullDate(jobDate)
+                JobDateFormatter.formatFullDate(
+                        jobDate
+                )
         );
 
         holder.tvTime.setText(
-                JobDateFormatter.formatStartTime(jobDate)
+                JobDateFormatter.formatStartTime(
+                        jobDate
+                )
         );
 
-        bindStatus(holder, signup.getStatus());
+        bindStatus(
+                holder,
+                signup.getStatus()
+        );
     }
 
     private void bindStatus(
             ViewHolder holder,
             String rawStatus
     ) {
-        String status = rawStatus == null
-                ? "PENDING"
-                : rawStatus;
+
+        String status =
+                rawStatus == null
+                        ? "PENDING"
+                        : rawStatus;
 
         switch (status) {
+
             case "APPROVED":
-                holder.tvStatusText.setText("已接受");
+
+                holder.tvStatusText.setText(
+                        "已接受"
+                );
 
                 holder.tvStatusText.setTextColor(
                         ContextCompat.getColor(
@@ -129,10 +152,14 @@ public class ApplicationAdapter
                                 R.color.primary_fixed
                         )
                 );
+
                 break;
 
             case "REJECTED":
-                holder.tvStatusText.setText("已拒絕");
+
+                holder.tvStatusText.setText(
+                        "已拒絕"
+                );
 
                 holder.tvStatusText.setTextColor(
                         ContextCompat.getColor(
@@ -142,7 +169,8 @@ public class ApplicationAdapter
                 );
 
                 holder.ivStatusIcon.setImageResource(
-                        android.R.drawable.ic_menu_close_clear_cancel
+                        android.R.drawable
+                                .ic_menu_close_clear_cancel
                 );
 
                 holder.ivStatusIcon.setColorFilter(
@@ -158,10 +186,14 @@ public class ApplicationAdapter
                                 R.color.tertiary_fixed
                         )
                 );
+
                 break;
 
             case "CANCELLED":
-                holder.tvStatusText.setText("已取消");
+
+                holder.tvStatusText.setText(
+                        "已取消"
+                );
 
                 holder.tvStatusText.setTextColor(
                         ContextCompat.getColor(
@@ -171,7 +203,8 @@ public class ApplicationAdapter
                 );
 
                 holder.ivStatusIcon.setImageResource(
-                        android.R.drawable.ic_menu_close_clear_cancel
+                        android.R.drawable
+                                .ic_menu_close_clear_cancel
                 );
 
                 holder.ivStatusIcon.setColorFilter(
@@ -187,10 +220,15 @@ public class ApplicationAdapter
                                 R.color.surface_container_high
                         )
                 );
+
                 break;
 
+            case "PENDING":
             default:
-                holder.tvStatusText.setText("受理中");
+
+                holder.tvStatusText.setText(
+                        "受理中"
+                );
 
                 holder.tvStatusText.setTextColor(
                         ContextCompat.getColor(
@@ -200,7 +238,8 @@ public class ApplicationAdapter
                 );
 
                 holder.ivStatusIcon.setImageResource(
-                        android.R.drawable.ic_menu_recent_history
+                        android.R.drawable
+                                .ic_menu_recent_history
                 );
 
                 holder.ivStatusIcon.setColorFilter(
@@ -216,6 +255,7 @@ public class ApplicationAdapter
                                 R.color.surface_container_high
                         )
                 );
+
                 break;
         }
     }
@@ -224,7 +264,9 @@ public class ApplicationAdapter
             String value,
             String fallback
     ) {
-        return value == null || value.isBlank()
+
+        return value == null
+                || value.isBlank()
                 ? fallback
                 : value;
     }
@@ -234,7 +276,8 @@ public class ApplicationAdapter
         return signups.size();
     }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+    static class ViewHolder
+            extends RecyclerView.ViewHolder {
 
         TextView tvJobTitle;
         TextView tvDate;
@@ -244,32 +287,40 @@ public class ApplicationAdapter
         ImageView ivStatusIcon;
         LinearLayout statusContainer;
 
-        ViewHolder(View itemView) {
+        ViewHolder(
+                View itemView
+        ) {
             super(itemView);
 
-            tvJobTitle = itemView.findViewById(
-                    R.id.tvJobTitle
-            );
+            tvJobTitle =
+                    itemView.findViewById(
+                            R.id.tvJobTitle
+                    );
 
-            tvDate = itemView.findViewById(
-                    R.id.tvDate
-            );
+            tvDate =
+                    itemView.findViewById(
+                            R.id.tvDate
+                    );
 
-            tvTime = itemView.findViewById(
-                    R.id.tvTime
-            );
+            tvTime =
+                    itemView.findViewById(
+                            R.id.tvTime
+                    );
 
-            tvStatusText = itemView.findViewById(
-                    R.id.tvStatusText
-            );
+            tvStatusText =
+                    itemView.findViewById(
+                            R.id.tvStatusText
+                    );
 
-            ivStatusIcon = itemView.findViewById(
-                    R.id.ivStatusIcon
-            );
+            ivStatusIcon =
+                    itemView.findViewById(
+                            R.id.ivStatusIcon
+                    );
 
-            statusContainer = itemView.findViewById(
-                    R.id.statusContainer
-            );
+            statusContainer =
+                    itemView.findViewById(
+                            R.id.statusContainer
+                    );
         }
     }
 }

@@ -16,7 +16,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.casualapp.android.model.JobAttendance;
-import com.casualapp.android.model.JobSignup;
+import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
 
@@ -57,6 +57,7 @@ public class CoordinatorApplicantsActivity
         tvJobTitle = findViewById(R.id.tvJobTitle);
         tvEmpty = findViewById(R.id.tvEmpty);
         progressBar = findViewById(R.id.progressBar);
+
         applicantsContainer =
                 findViewById(R.id.applicantsContainer);
 
@@ -70,7 +71,9 @@ public class CoordinatorApplicantsActivity
     }
 
     private boolean readScreenData() {
-        User currentUser = UserSession.getCurrentUser();
+
+        User currentUser =
+                UserSession.getCurrentUser();
 
         if (currentUser == null
                 || !currentUser.isCoordinator()
@@ -86,12 +89,17 @@ public class CoordinatorApplicantsActivity
             return false;
         }
 
-        coordinatorId = currentUser.getId();
+        coordinatorId =
+                currentUser.getId();
 
         long receivedJobId =
-                getIntent().getLongExtra("jobId", -1L);
+                getIntent().getLongExtra(
+                        "jobId",
+                        -1L
+                );
 
         if (receivedJobId <= 0) {
+
             Toast.makeText(
                     this,
                     "Invalid job ID",
@@ -105,7 +113,8 @@ public class CoordinatorApplicantsActivity
         jobId = receivedJobId;
 
         String jobTitle =
-                getIntent().getStringExtra("jobTitle");
+                getIntent()
+                        .getStringExtra("jobTitle");
 
         if (jobTitle == null
                 || jobTitle.trim().isEmpty()) {
@@ -114,76 +123,110 @@ public class CoordinatorApplicantsActivity
         }
 
         tvJobTitle.setText(jobTitle);
+
         return true;
     }
 
     private void loadApplicants() {
+
         if (isLoading) {
             return;
         }
 
         isLoading = true;
 
-        progressBar.setVisibility(View.VISIBLE);
-        tvEmpty.setVisibility(View.GONE);
+        progressBar.setVisibility(
+                View.VISIBLE
+        );
+
+        tvEmpty.setVisibility(
+                View.GONE
+        );
+
         applicantsContainer.removeAllViews();
 
         RetrofitClient.getApiService()
-                .getJobSignups(jobId, coordinatorId)
-                .enqueue(new Callback<List<JobSignup>>() {
+                .getJobSignups(
+                        jobId,
+                        coordinatorId
+                )
+                .enqueue(
+                        new Callback<List<SignupResponse>>() {
 
-                    @Override
-                    public void onResponse(
-                            Call<List<JobSignup>> call,
-                            Response<List<JobSignup>> response
-                    ) {
-                        isLoading = false;
-                        progressBar.setVisibility(View.GONE);
+                            @Override
+                            public void onResponse(
+                                    Call<List<SignupResponse>> call,
+                                    Response<List<SignupResponse>> response
+                            ) {
 
-                        if (!response.isSuccessful()) {
-                            showErrorResponse(response);
-                            return;
-                        }
+                                isLoading = false;
 
-                        List<JobSignup> signups =
-                                response.body();
+                                progressBar.setVisibility(
+                                        View.GONE
+                                );
 
-                        if (signups == null
-                                || signups.isEmpty()) {
+                                if (!response.isSuccessful()) {
+                                    showErrorResponse(response);
+                                    return;
+                                }
 
-                            tvEmpty.setVisibility(View.VISIBLE);
-                            return;
-                        }
+                                List<SignupResponse> signups =
+                                        response.body();
 
-                        for (JobSignup signup : signups) {
-                            if (signup != null) {
-                                addApplicantCard(signup);
+                                if (signups == null
+                                        || signups.isEmpty()) {
+
+                                    tvEmpty.setVisibility(
+                                            View.VISIBLE
+                                    );
+
+                                    return;
+                                }
+
+                                for (SignupResponse signup : signups) {
+
+                                    if (signup != null) {
+                                        addApplicantCard(signup);
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(
+                                    Call<List<SignupResponse>> call,
+                                    Throwable throwable
+                            ) {
+
+                                isLoading = false;
+
+                                progressBar.setVisibility(
+                                        View.GONE
+                                );
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Failed to load applicants: "
+                                                + getFailureMessage(
+                                                        throwable
+                                                ),
+                                        Toast.LENGTH_LONG
+                                ).show();
                             }
                         }
-                    }
-
-                    @Override
-                    public void onFailure(
-                            Call<List<JobSignup>> call,
-                            Throwable throwable
-                    ) {
-                        isLoading = false;
-                        progressBar.setVisibility(View.GONE);
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Failed to load applicants: "
-                                        + getFailureMessage(throwable),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                );
     }
 
-    private void addApplicantCard(JobSignup signup) {
-        LinearLayout card = new LinearLayout(this);
+    private void addApplicantCard(
+            SignupResponse signup
+    ) {
 
-        card.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout card =
+                new LinearLayout(this);
+
+        card.setOrientation(
+                LinearLayout.VERTICAL
+        );
+
         card.setPadding(
                 dp(16),
                 dp(16),
@@ -194,15 +237,26 @@ public class CoordinatorApplicantsActivity
         GradientDrawable background =
                 new GradientDrawable();
 
-        background.setColor(Color.WHITE);
-        background.setCornerRadius(dp(12));
+        background.setColor(
+                Color.WHITE
+        );
+
+        background.setCornerRadius(
+                dp(12)
+        );
+
         background.setStroke(
                 dp(1),
                 Color.LTGRAY
         );
 
-        card.setBackground(background);
-        card.setElevation(dp(2));
+        card.setBackground(
+                background
+        );
+
+        card.setElevation(
+                dp(2)
+        );
 
         LinearLayout.LayoutParams cardParams =
                 new LinearLayout.LayoutParams(
@@ -217,38 +271,45 @@ public class CoordinatorApplicantsActivity
                 dp(14)
         );
 
-        card.setLayoutParams(cardParams);
-
-        TextView tvWorker = createTextView(
-                getWorkerName(signup),
-                18,
-                true
+        card.setLayoutParams(
+                cardParams
         );
 
-        TextView tvPhone = createTextView(
-                "Phone: " + getWorkerPhone(signup),
-                14,
-                false
-        );
+        TextView tvWorker =
+                createTextView(
+                        getWorkerName(signup),
+                        18,
+                        true
+                );
 
-        TextView tvStatus = createTextView(
-                "Application status: "
-                        + safeText(
-                                signup.getStatus(),
-                                "UNKNOWN"
-                        ),
-                15,
-                true
-        );
+        TextView tvPhone =
+                createTextView(
+                        "Phone: "
+                                + getWorkerPhone(signup),
+                        14,
+                        false
+                );
 
-        TextView tvSignupTime = createTextView(
-                "Applied: "
-                        + formatDateTime(
-                                signup.getSignupTime()
-                        ),
-                13,
-                false
-        );
+        TextView tvStatus =
+                createTextView(
+                        "Application status: "
+                                + safeText(
+                                        signup.getStatus(),
+                                        "UNKNOWN"
+                                ),
+                        15,
+                        true
+                );
+
+        TextView tvSignupTime =
+                createTextView(
+                        "Applied: "
+                                + formatDateTime(
+                                        signup.getSignupTime()
+                                ),
+                        13,
+                        false
+                );
 
         card.addView(tvWorker);
         card.addView(tvPhone);
@@ -261,59 +322,79 @@ public class CoordinatorApplicantsActivity
                         .trim()
                         .isEmpty()) {
 
-            TextView tvReason = createTextView(
-                    "Reason: "
-                            + signup.getActionReason(),
-                    13,
-                    false
-            );
+            TextView tvReason =
+                    createTextView(
+                            "Reason: "
+                                    + signup.getActionReason(),
+                            13,
+                            false
+                    );
 
             card.addView(tvReason);
         }
 
         if (signup.isPending()) {
-            addPendingButtons(card, signup);
+
+            addPendingButtons(
+                    card,
+                    signup
+            );
 
         } else if (signup.isApproved()) {
-            addAttendanceButtons(card, signup);
+
+            addAttendanceButtons(
+                    card,
+                    signup
+            );
 
         } else if (signup.isRejected()) {
-            TextView message = createTextView(
-                    "This application has been rejected.",
-                    14,
-                    false
-            );
+
+            TextView message =
+                    createTextView(
+                            "This application has been rejected.",
+                            14,
+                            false
+                    );
 
             card.addView(message);
 
         } else {
-            TextView message = createTextView(
-                    "No actions are available for this application.",
-                    14,
-                    false
-            );
+
+            TextView message =
+                    createTextView(
+                            "No actions are available for this application.",
+                            14,
+                            false
+                    );
 
             card.addView(message);
         }
 
-        applicantsContainer.addView(card);
+        applicantsContainer.addView(
+                card
+        );
     }
 
     private void addPendingButtons(
             LinearLayout card,
-            JobSignup signup
+            SignupResponse signup
     ) {
-        LinearLayout actions = createButtonRow();
 
-        Button btnApprove = createButton("Approve");
-        Button btnReject = createButton("Reject");
+        LinearLayout actions =
+                createButtonRow();
 
-        btnApprove.setOnClickListener(v ->
-                approveSignup(signup)
+        Button btnApprove =
+                createButton("Approve");
+
+        Button btnReject =
+                createButton("Reject");
+
+        btnApprove.setOnClickListener(
+                v -> approveSignup(signup)
         );
 
-        btnReject.setOnClickListener(v ->
-                showRejectDialog(signup)
+        btnReject.setOnClickListener(
+                v -> showRejectDialog(signup)
         );
 
         actions.addView(btnApprove);
@@ -324,39 +405,49 @@ public class CoordinatorApplicantsActivity
 
     private void addAttendanceButtons(
             LinearLayout card,
-            JobSignup signup
+            SignupResponse signup
     ) {
+
         if (signup.getId() != null
                 && locallyRecordedAttendance.contains(
                         signup.getId()
                 )) {
 
-            TextView recorded = createTextView(
-                    "Attendance was recorded during this session.",
-                    14,
-                    true
-            );
+            TextView recorded =
+                    createTextView(
+                            "Attendance was recorded during this session.",
+                            14,
+                            true
+                    );
 
             card.addView(recorded);
+
             return;
         }
 
-        TextView label = createTextView(
-                "Record attendance:",
-                14,
-                true
-        );
+        TextView label =
+                createTextView(
+                        "Record attendance:",
+                        14,
+                        true
+                );
 
         card.addView(label);
 
-        LinearLayout actions = createButtonRow();
+        LinearLayout actions =
+                createButtonRow();
 
-        Button btnCompleted = createButton("Completed");
-        Button btnLate = createButton("Late");
-        Button btnNoShow = createButton("No show");
+        Button btnCompleted =
+                createButton("Completed");
 
-        btnCompleted.setOnClickListener(v ->
-                recordAttendance(
+        Button btnLate =
+                createButton("Late");
+
+        Button btnNoShow =
+                createButton("No show");
+
+        btnCompleted.setOnClickListener(
+                v -> recordAttendance(
                         signup,
                         "COMPLETED",
                         0,
@@ -364,12 +455,12 @@ public class CoordinatorApplicantsActivity
                 )
         );
 
-        btnLate.setOnClickListener(v ->
-                showLateDialog(signup)
+        btnLate.setOnClickListener(
+                v -> showLateDialog(signup)
         );
 
-        btnNoShow.setOnClickListener(v ->
-                confirmNoShow(signup)
+        btnNoShow.setOnClickListener(
+                v -> confirmNoShow(signup)
         );
 
         actions.addView(btnCompleted);
@@ -379,7 +470,10 @@ public class CoordinatorApplicantsActivity
         card.addView(actions);
     }
 
-    private void approveSignup(JobSignup signup) {
+    private void approveSignup(
+            SignupResponse signup
+    ) {
+
         if (signup.getId() == null) {
             showInvalidSignup();
             return;
@@ -393,56 +487,72 @@ public class CoordinatorApplicantsActivity
                         coordinatorId,
                         "Approved by coordinator"
                 )
-                .enqueue(new Callback<JobSignup>() {
+                .enqueue(
+                        new Callback<SignupResponse>() {
 
-                    @Override
-                    public void onResponse(
-                            Call<JobSignup> call,
-                            Response<JobSignup> response
-                    ) {
-                        setActionLoading(false);
+                            @Override
+                            public void onResponse(
+                                    Call<SignupResponse> call,
+                                    Response<SignupResponse> response
+                            ) {
 
-                        if (!response.isSuccessful()) {
-                            showErrorResponse(response);
-                            return;
+                                setActionLoading(false);
+
+                                if (!response.isSuccessful()) {
+                                    showErrorResponse(response);
+                                    return;
+                                }
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Application approved",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                loadApplicants();
+                            }
+
+                            @Override
+                            public void onFailure(
+                                    Call<SignupResponse> call,
+                                    Throwable throwable
+                            ) {
+
+                                setActionLoading(false);
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Approval failed: "
+                                                + getFailureMessage(
+                                                        throwable
+                                                ),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
                         }
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Application approved",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        loadApplicants();
-                    }
-
-                    @Override
-                    public void onFailure(
-                            Call<JobSignup> call,
-                            Throwable throwable
-                    ) {
-                        setActionLoading(false);
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Approval failed: "
-                                        + getFailureMessage(throwable),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                );
     }
 
-    private void showRejectDialog(JobSignup signup) {
-        EditText input = new EditText(this);
+    private void showRejectDialog(
+            SignupResponse signup
+    ) {
 
-        input.setHint("Reason for rejection");
+        EditText input =
+                new EditText(this);
+
+        input.setHint(
+                "Reason for rejection"
+        );
+
         input.setSingleLine(false);
         input.setMinLines(2);
 
-        int padding = dp(20);
+        int padding =
+                dp(20);
 
-        LinearLayout wrapper = new LinearLayout(this);
+        LinearLayout wrapper =
+                new LinearLayout(this);
+
         wrapper.setPadding(
                 padding,
                 0,
@@ -459,12 +569,18 @@ public class CoordinatorApplicantsActivity
         );
 
         new AlertDialog.Builder(this)
-                .setTitle("Reject application")
+                .setTitle(
+                        "Reject application"
+                )
                 .setView(wrapper)
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
                 .setPositiveButton(
                         "Reject",
                         (dialog, which) -> {
+
                             String reason =
                                     input.getText()
                                             .toString()
@@ -485,9 +601,10 @@ public class CoordinatorApplicantsActivity
     }
 
     private void rejectSignup(
-            JobSignup signup,
+            SignupResponse signup,
             String reason
     ) {
+
         if (signup.getId() == null) {
             showInvalidSignup();
             return;
@@ -501,57 +618,73 @@ public class CoordinatorApplicantsActivity
                         coordinatorId,
                         reason
                 )
-                .enqueue(new Callback<JobSignup>() {
+                .enqueue(
+                        new Callback<SignupResponse>() {
 
-                    @Override
-                    public void onResponse(
-                            Call<JobSignup> call,
-                            Response<JobSignup> response
-                    ) {
-                        setActionLoading(false);
+                            @Override
+                            public void onResponse(
+                                    Call<SignupResponse> call,
+                                    Response<SignupResponse> response
+                            ) {
 
-                        if (!response.isSuccessful()) {
-                            showErrorResponse(response);
-                            return;
+                                setActionLoading(false);
+
+                                if (!response.isSuccessful()) {
+                                    showErrorResponse(response);
+                                    return;
+                                }
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Application rejected",
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                loadApplicants();
+                            }
+
+                            @Override
+                            public void onFailure(
+                                    Call<SignupResponse> call,
+                                    Throwable throwable
+                            ) {
+
+                                setActionLoading(false);
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Rejection failed: "
+                                                + getFailureMessage(
+                                                        throwable
+                                                ),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
                         }
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Application rejected",
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        loadApplicants();
-                    }
-
-                    @Override
-                    public void onFailure(
-                            Call<JobSignup> call,
-                            Throwable throwable
-                    ) {
-                        setActionLoading(false);
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Rejection failed: "
-                                        + getFailureMessage(throwable),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                );
     }
 
-    private void showLateDialog(JobSignup signup) {
-        EditText input = new EditText(this);
+    private void showLateDialog(
+            SignupResponse signup
+    ) {
 
-        input.setHint("Late minutes");
+        EditText input =
+                new EditText(this);
+
+        input.setHint(
+                "Late minutes"
+        );
+
         input.setInputType(
                 InputType.TYPE_CLASS_NUMBER
         );
 
-        int padding = dp(20);
+        int padding =
+                dp(20);
 
-        LinearLayout wrapper = new LinearLayout(this);
+        LinearLayout wrapper =
+                new LinearLayout(this);
+
         wrapper.setPadding(
                 padding,
                 0,
@@ -569,7 +702,9 @@ public class CoordinatorApplicantsActivity
 
         AlertDialog dialog =
                 new AlertDialog.Builder(this)
-                        .setTitle("Record late attendance")
+                        .setTitle(
+                                "Record late attendance"
+                        )
                         .setView(wrapper)
                         .setNegativeButton(
                                 "Cancel",
@@ -581,62 +716,84 @@ public class CoordinatorApplicantsActivity
                         )
                         .create();
 
-        dialog.setOnShowListener(unused ->
-                dialog.getButton(
-                        AlertDialog.BUTTON_POSITIVE
-                ).setOnClickListener(v -> {
-                    String text =
-                            input.getText()
-                                    .toString()
-                                    .trim();
+        dialog.setOnShowListener(
+                unused ->
+                        dialog.getButton(
+                                AlertDialog.BUTTON_POSITIVE
+                        ).setOnClickListener(
+                                v -> {
 
-                    if (text.isEmpty()) {
-                        input.setError(
-                                "Enter the number of minutes"
-                        );
-                        return;
-                    }
+                                    String text =
+                                            input.getText()
+                                                    .toString()
+                                                    .trim();
 
-                    try {
-                        int lateMinutes =
-                                Integer.parseInt(text);
+                                    if (text.isEmpty()) {
 
-                        if (lateMinutes <= 0) {
-                            input.setError(
-                                    "Minutes must be greater than zero"
-                            );
-                            return;
-                        }
+                                        input.setError(
+                                                "Enter the number of minutes"
+                                        );
 
-                        dialog.dismiss();
+                                        return;
+                                    }
 
-                        recordAttendance(
-                                signup,
-                                "LATE",
-                                lateMinutes,
-                                "Worker arrived "
-                                        + lateMinutes
-                                        + " minutes late"
-                        );
+                                    try {
 
-                    } catch (NumberFormatException exception) {
-                        input.setError(
-                                "Enter a valid number"
-                        );
-                    }
-                })
+                                        int lateMinutes =
+                                                Integer.parseInt(
+                                                        text
+                                                );
+
+                                        if (lateMinutes <= 0) {
+
+                                            input.setError(
+                                                    "Minutes must be greater than zero"
+                                            );
+
+                                            return;
+                                        }
+
+                                        dialog.dismiss();
+
+                                        recordAttendance(
+                                                signup,
+                                                "LATE",
+                                                lateMinutes,
+                                                "Worker arrived "
+                                                        + lateMinutes
+                                                        + " minutes late"
+                                        );
+
+                                    } catch (
+                                            NumberFormatException exception
+                                    ) {
+
+                                        input.setError(
+                                                "Enter a valid number"
+                                        );
+                                    }
+                                }
+                        )
         );
 
         dialog.show();
     }
 
-    private void confirmNoShow(JobSignup signup) {
+    private void confirmNoShow(
+            SignupResponse signup
+    ) {
+
         new AlertDialog.Builder(this)
-                .setTitle("Record no-show")
+                .setTitle(
+                        "Record no-show"
+                )
                 .setMessage(
                         "Confirm that this worker did not attend?"
                 )
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(
+                        "Cancel",
+                        null
+                )
                 .setPositiveButton(
                         "Confirm",
                         (dialog, which) ->
@@ -651,11 +808,12 @@ public class CoordinatorApplicantsActivity
     }
 
     private void recordAttendance(
-            JobSignup signup,
+            SignupResponse signup,
             String status,
             int lateMinutes,
             String reason
     ) {
+
         if (signup.getId() == null) {
             showInvalidSignup();
             return;
@@ -671,54 +829,66 @@ public class CoordinatorApplicantsActivity
                         lateMinutes,
                         reason
                 )
-                .enqueue(new Callback<JobAttendance>() {
+                .enqueue(
+                        new Callback<JobAttendance>() {
 
-                    @Override
-                    public void onResponse(
-                            Call<JobAttendance> call,
-                            Response<JobAttendance> response
-                    ) {
-                        setActionLoading(false);
+                            @Override
+                            public void onResponse(
+                                    Call<JobAttendance> call,
+                                    Response<JobAttendance> response
+                            ) {
 
-                        if (!response.isSuccessful()) {
-                            showErrorResponse(response);
-                            return;
+                                setActionLoading(false);
+
+                                if (!response.isSuccessful()) {
+                                    showErrorResponse(response);
+                                    return;
+                                }
+
+                                locallyRecordedAttendance.add(
+                                        signup.getId()
+                                );
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Attendance recorded: "
+                                                + status,
+                                        Toast.LENGTH_SHORT
+                                ).show();
+
+                                loadApplicants();
+                            }
+
+                            @Override
+                            public void onFailure(
+                                    Call<JobAttendance> call,
+                                    Throwable throwable
+                            ) {
+
+                                setActionLoading(false);
+
+                                Toast.makeText(
+                                        CoordinatorApplicantsActivity.this,
+                                        "Attendance failed: "
+                                                + getFailureMessage(
+                                                        throwable
+                                                ),
+                                        Toast.LENGTH_LONG
+                                ).show();
+                            }
                         }
-
-                        locallyRecordedAttendance.add(
-                                signup.getId()
-                        );
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Attendance recorded: " + status,
-                                Toast.LENGTH_SHORT
-                        ).show();
-
-                        loadApplicants();
-                    }
-
-                    @Override
-                    public void onFailure(
-                            Call<JobAttendance> call,
-                            Throwable throwable
-                    ) {
-                        setActionLoading(false);
-
-                        Toast.makeText(
-                                CoordinatorApplicantsActivity.this,
-                                "Attendance failed: "
-                                        + getFailureMessage(throwable),
-                                Toast.LENGTH_LONG
-                        ).show();
-                    }
-                });
+                );
     }
 
     private LinearLayout createButtonRow() {
-        LinearLayout row = new LinearLayout(this);
 
-        row.setOrientation(LinearLayout.HORIZONTAL);
+        LinearLayout row =
+                new LinearLayout(this);
+
+        row.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
         row.setPadding(
                 0,
                 dp(12),
@@ -731,8 +901,12 @@ public class CoordinatorApplicantsActivity
         return row;
     }
 
-    private Button createButton(String text) {
-        Button button = new Button(this);
+    private Button createButton(
+            String text
+    ) {
+
+        Button button =
+                new Button(this);
 
         button.setText(text);
         button.setAllCaps(false);
@@ -752,7 +926,9 @@ public class CoordinatorApplicantsActivity
                 0
         );
 
-        button.setLayoutParams(params);
+        button.setLayoutParams(
+                params
+        );
 
         return button;
     }
@@ -762,13 +938,18 @@ public class CoordinatorApplicantsActivity
             int textSize,
             boolean bold
     ) {
-        TextView textView = new TextView(this);
+
+        TextView textView =
+                new TextView(this);
 
         textView.setText(text);
         textView.setTextSize(textSize);
-        textView.setTextColor(Color.BLACK);
+        textView.setTextColor(
+                Color.BLACK
+        );
 
         if (bold) {
+
             textView.setTypeface(
                     textView.getTypeface(),
                     android.graphics.Typeface.BOLD
@@ -785,15 +966,21 @@ public class CoordinatorApplicantsActivity
         return textView;
     }
 
-    private void setActionLoading(boolean loading) {
+    private void setActionLoading(
+            boolean loading
+    ) {
+
         isLoading = loading;
 
         progressBar.setVisibility(
-                loading ? View.VISIBLE : View.GONE
+                loading
+                        ? View.VISIBLE
+                        : View.GONE
         );
     }
 
     private void showInvalidSignup() {
+
         Toast.makeText(
                 this,
                 "Invalid signup ID",
@@ -801,66 +988,89 @@ public class CoordinatorApplicantsActivity
         ).show();
     }
 
-    private String getWorkerName(JobSignup signup) {
-        if (signup.getWorker() == null) {
-            return "Unknown worker";
-        }
+    private String getWorkerName(
+            SignupResponse signup
+    ) {
 
         return safeText(
-                signup.getWorker().getName(),
+                signup.getWorkerName(),
                 "Unknown worker"
         );
     }
 
-    private String getWorkerPhone(JobSignup signup) {
-        if (signup.getWorker() == null) {
-            return "-";
-        }
+    private String getWorkerPhone(
+            SignupResponse signup
+    ) {
 
         return safeText(
-                signup.getWorker().getPhoneNumber(),
+                signup.getWorkerPhoneNumber(),
                 "-"
         );
     }
 
-    private String formatDateTime(String value) {
-        if (value == null || value.trim().isEmpty()) {
+    private String formatDateTime(
+            String value
+    ) {
+
+        if (value == null
+                || value.trim().isEmpty()) {
+
             return "-";
         }
 
-        return value.replace("T", " ");
+        return value.replace(
+                "T",
+                " "
+        );
     }
 
     private String safeText(
             String value,
             String fallback
     ) {
-        if (value == null || value.trim().isEmpty()) {
+
+        if (value == null
+                || value.trim().isEmpty()) {
+
             return fallback;
         }
 
         return value;
     }
 
-    private String getFailureMessage(Throwable throwable) {
+    private String getFailureMessage(
+            Throwable throwable
+    ) {
+
         if (throwable == null) {
             return "Unknown network error";
         }
 
         if (throwable.getMessage() == null
-                || throwable.getMessage().trim().isEmpty()) {
+                || throwable
+                        .getMessage()
+                        .trim()
+                        .isEmpty()) {
 
-            return throwable.getClass().getSimpleName();
+            return throwable
+                    .getClass()
+                    .getSimpleName();
         }
 
         return throwable.getMessage();
     }
 
-    private void showErrorResponse(Response<?> response) {
+    private void showErrorResponse(
+            Response<?> response
+    ) {
+
         try {
+
             String errorBody =
                     response.errorBody() != null
-                            ? response.errorBody().string()
+                            ? response
+                                    .errorBody()
+                                    .string()
                             : "Unknown server error";
 
             Toast.makeText(
@@ -873,15 +1083,20 @@ public class CoordinatorApplicantsActivity
             ).show();
 
         } catch (Exception exception) {
+
             Toast.makeText(
                     this,
-                    "Error " + response.code(),
+                    "Error "
+                            + response.code(),
                     Toast.LENGTH_LONG
             ).show();
         }
     }
 
-    private int dp(int value) {
+    private int dp(
+            int value
+    ) {
+
         return Math.round(
                 value
                         * getResources()

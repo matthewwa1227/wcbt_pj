@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.casualapp.android.model.JobSignup;
+import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
 import com.google.android.material.button.MaterialButton;
@@ -107,8 +107,8 @@ public class MyJobsActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(
-                            Call<List<JobSignup>> call,
-                            Response<List<JobSignup>> response
+                            Call<List<SignupResponse>> call,
+                            Response<List<SignupResponse>> response
                     ) {
                         setLoading(false);
 
@@ -119,7 +119,7 @@ public class MyJobsActivity extends AppCompatActivity {
                             return;
                         }
 
-                        List<JobSignup> applications =
+                        List<SignupResponse> applications =
                                 new ArrayList<>(response.body());
 
                         applications.sort((first, second) -> {
@@ -150,7 +150,7 @@ public class MyJobsActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(
-                            Call<List<JobSignup>> call,
+                            Call<List<SignupResponse>> call,
                             Throwable throwable
                     ) {
                         setLoading(false);

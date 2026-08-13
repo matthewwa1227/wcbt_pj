@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.casualapp.backend.controller.ApiException;
+import com.casualapp.backend.dto.signup.SignupResponse;
 import com.casualapp.backend.model.Job;
 import com.casualapp.backend.model.JobSignup;
 import com.casualapp.backend.model.JobStatus;
@@ -35,46 +36,82 @@ public class JobSignupService {
     }
 
     @Transactional(readOnly = true)
-    public List<JobSignup> getAllSignups() {
-        return jobSignupRepository.findAll();
+    public List<SignupResponse> getAllSignups() {
+        return jobSignupRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<JobSignup> getWorkerSignups(Long workerId) {
-        requireRole(workerId, Role.WORKER, "Worker");
-        return jobSignupRepository.findByWorkerId(workerId);
+    public List<SignupResponse> getWorkerSignups(Long workerId) {
+
+        requireRole(
+                workerId,
+                Role.WORKER,
+                "Worker"
+        );
+
+        return jobSignupRepository.findByWorkerId(workerId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<JobSignup> getJobSignups(
+    public List<SignupResponse> getJobSignups(
             Long jobId,
             Long coordinatorId
     ) {
-        User coordinator =
-                requireRole(coordinatorId, Role.COORDINATOR, "Coordinator");
+
+        User coordinator = requireRole(
+                coordinatorId,
+                Role.COORDINATOR,
+                "Coordinator"
+        );
 
         Job job = requireJob(jobId);
 
-        requireCoordinatorOwnsJob(coordinator, job);
+        requireCoordinatorOwnsJob(
+                coordinator,
+                job
+        );
 
-        return jobSignupRepository.findByJobId(jobId);
+        return jobSignupRepository.findByJobId(jobId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<JobSignup> getCoordinatorSignups(Long coordinatorId) {
+    public List<SignupResponse> getCoordinatorSignups(
+            Long coordinatorId
+    ) {
+
         requireRole(
                 coordinatorId,
                 Role.COORDINATOR,
                 "Coordinator"
         );
 
-        return jobSignupRepository.findByJobCoordinatorId(coordinatorId);
+        return jobSignupRepository
+                .findByJobCoordinatorId(coordinatorId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     @Transactional
-    public JobSignup signUp(Long workerId, Long jobId) {
-        User worker =
-                requireRole(workerId, Role.WORKER, "Worker");
+    public SignupResponse signUp(
+            Long workerId,
+            Long jobId
+    ) {
+
+        User worker = requireRole(
+                workerId,
+                Role.WORKER,
+                "Worker"
+        );
 
         Job job = requireJob(jobId);
 
@@ -87,6 +124,7 @@ public class JobSignupService {
         }
 
         if (job.getFilledSlots() >= job.getTotalSlots()) {
+
             job.setStatus(JobStatus.FULL);
             jobRepository.save(job);
 
@@ -98,7 +136,10 @@ public class JobSignupService {
         }
 
         if (jobSignupRepository
-                .findByJobIdAndWorkerId(jobId, workerId)
+                .findByJobIdAndWorkerId(
+                        jobId,
+                        workerId
+                )
                 .isPresent()) {
 
             throw new ApiException(
@@ -109,34 +150,43 @@ public class JobSignupService {
         }
 
         JobSignup signup = new JobSignup();
+
         signup.setWorker(worker);
         signup.setJob(job);
         signup.setStatus(SignupStatus.PENDING);
 
-        return jobSignupRepository.save(signup);
+        JobSignup savedSignup =
+                jobSignupRepository.save(signup);
+
+        return toResponse(savedSignup);
     }
 
     @Transactional
-    public JobSignup approveSignup(
+    public SignupResponse approveSignup(
             Long signupId,
             Long coordinatorId,
             String reason
     ) {
+
         JobSignup signup = requireSignup(signupId);
 
-        User coordinator =
-                requireRole(
-                        coordinatorId,
-                        Role.COORDINATOR,
-                        "Coordinator"
-                );
+        User coordinator = requireRole(
+                coordinatorId,
+                Role.COORDINATOR,
+                "Coordinator"
+        );
 
         Job job = signup.getJob();
 
-        requireCoordinatorOwnsJob(coordinator, job);
+        requireCoordinatorOwnsJob(
+                coordinator,
+                job
+        );
+
         requirePendingSignup(signup);
 
         if (job.getStatus() != JobStatus.OPEN) {
+
             throw new ApiException(
                     HttpStatus.CONFLICT,
                     "JOB_NOT_OPEN",
@@ -145,6 +195,7 @@ public class JobSignupService {
         }
 
         if (job.getFilledSlots() >= job.getTotalSlots()) {
+
             job.setStatus(JobStatus.FULL);
             jobRepository.save(job);
 
@@ -155,32 +206,49 @@ public class JobSignupService {
             );
         }
 
-        signup.setStatus(SignupStatus.APPROVED);
-        signup.setActionedBy(coordinator);
+        signup.setStatus(
+                SignupStatus.APPROVED
+        );
+
+        signup.setActionedBy(
+                coordinator
+        );
+
         signup.setActionReason(
                 hasText(reason)
                         ? reason.trim()
                         : "Application approved"
         );
 
-        job.setFilledSlots(job.getFilledSlots() + 1);
+        job.setFilledSlots(
+                job.getFilledSlots() + 1
+        );
 
-        if (job.getFilledSlots() >= job.getTotalSlots()) {
-            job.setStatus(JobStatus.FULL);
+        if (job.getFilledSlots()
+                >= job.getTotalSlots()) {
+
+            job.setStatus(
+                    JobStatus.FULL
+            );
         }
 
         jobRepository.save(job);
 
-        return jobSignupRepository.save(signup);
+        JobSignup savedSignup =
+                jobSignupRepository.save(signup);
+
+        return toResponse(savedSignup);
     }
 
     @Transactional
-    public JobSignup rejectSignup(
+    public SignupResponse rejectSignup(
             Long signupId,
             Long coordinatorId,
             String reason
     ) {
-        JobSignup signup = requireSignup(signupId);
+
+        JobSignup signup =
+                requireSignup(signupId);
 
         User coordinator =
                 requireRole(
@@ -196,33 +264,54 @@ public class JobSignupService {
 
         requirePendingSignup(signup);
 
-        signup.setStatus(SignupStatus.REJECTED);
-        signup.setActionedBy(coordinator);
+        signup.setStatus(
+                SignupStatus.REJECTED
+        );
+
+        signup.setActionedBy(
+                coordinator
+        );
+
         signup.setActionReason(
                 hasText(reason)
                         ? reason.trim()
                         : "Application rejected"
         );
 
-        return jobSignupRepository.save(signup);
+        JobSignup savedSignup =
+                jobSignupRepository.save(signup);
+
+        return toResponse(savedSignup);
     }
 
-    public JobSignup requireSignup(Long signupId) {
-        return jobSignupRepository.findById(signupId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "SIGNUP_NOT_FOUND",
-                        "Signup not found"
-                ));
+    public JobSignup requireSignup(
+            Long signupId
+    ) {
+
+        return jobSignupRepository
+                .findById(signupId)
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "SIGNUP_NOT_FOUND",
+                                "Signup not found"
+                        )
+                );
     }
 
-    private Job requireJob(Long jobId) {
-        return jobRepository.findById(jobId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "JOB_NOT_FOUND",
-                        "Job not found"
-                ));
+    private Job requireJob(
+            Long jobId
+    ) {
+
+        return jobRepository
+                .findById(jobId)
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "JOB_NOT_FOUND",
+                                "Job not found"
+                        )
+                );
     }
 
     private User requireRole(
@@ -230,14 +319,19 @@ public class JobSignupService {
             Role requiredRole,
             String userType
     ) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ApiException(
-                        HttpStatus.NOT_FOUND,
-                        "USER_NOT_FOUND",
-                        userType + " not found"
-                ));
+
+        User user = userRepository
+                .findById(userId)
+                .orElseThrow(() ->
+                        new ApiException(
+                                HttpStatus.NOT_FOUND,
+                                "USER_NOT_FOUND",
+                                userType + " not found"
+                        )
+                );
 
         if (user.getRole() != requiredRole) {
+
             throw new ApiException(
                     HttpStatus.FORBIDDEN,
                     "ROLE_REQUIRED",
@@ -252,6 +346,7 @@ public class JobSignupService {
             User coordinator,
             Job job
     ) {
+
         if (job.getCoordinator() == null
                 || job.getCoordinator().getId() == null
                 || !job.getCoordinator()
@@ -266,8 +361,13 @@ public class JobSignupService {
         }
     }
 
-    private void requirePendingSignup(JobSignup signup) {
-        if (signup.getStatus() != SignupStatus.PENDING) {
+    private void requirePendingSignup(
+            JobSignup signup
+    ) {
+
+        if (signup.getStatus()
+                != SignupStatus.PENDING) {
+
             throw new ApiException(
                     HttpStatus.CONFLICT,
                     "SIGNUP_NOT_PENDING",
@@ -276,7 +376,100 @@ public class JobSignupService {
         }
     }
 
-    private boolean hasText(String value) {
-        return value != null && !value.isBlank();
+    private SignupResponse toResponse(
+            JobSignup signup
+    ) {
+
+        SignupResponse response =
+                new SignupResponse();
+
+        response.setId(
+                signup.getId()
+        );
+
+        if (signup.getWorker() != null) {
+
+            response.setWorkerId(
+                    signup.getWorker().getId()
+            );
+
+            response.setWorkerName(
+                    signup.getWorker().getName()
+            );
+
+            response.setWorkerPhoneNumber(
+                    signup.getWorker().getPhoneNumber()
+            );
+        }
+
+        if (signup.getJob() != null) {
+
+            response.setJobId(
+                    signup.getJob().getId()
+            );
+
+            response.setJobTitle(
+                    signup.getJob().getTitle()
+            );
+
+            response.setJobLocation(
+                    signup.getJob().getLocation()
+            );
+
+            response.setJobDate(
+                    signup.getJob().getJobDate() == null
+                            ? null
+                            : signup.getJob()
+                                    .getJobDate()
+                                    .toString()
+            );
+        }
+
+        response.setStatus(
+                signup.getStatus() == null
+                        ? null
+                        : signup.getStatus().name()
+        );
+
+        response.setSignupTime(
+                signup.getSignupTime() == null
+                        ? null
+                        : signup.getSignupTime()
+                                .toString()
+        );
+
+        response.setUpdatedAt(
+                signup.getUpdatedAt() == null
+                        ? null
+                        : signup.getUpdatedAt()
+                                .toString()
+        );
+
+        response.setActionReason(
+                signup.getActionReason()
+        );
+
+        if (signup.getActionedBy() != null) {
+
+            response.setActionedByUserId(
+                    signup.getActionedBy()
+                            .getId()
+            );
+
+            response.setActionedByName(
+                    signup.getActionedBy()
+                            .getName()
+            );
+        }
+
+        return response;
+    }
+
+    private boolean hasText(
+            String value
+    ) {
+
+        return value != null
+                && !value.isBlank();
     }
 }

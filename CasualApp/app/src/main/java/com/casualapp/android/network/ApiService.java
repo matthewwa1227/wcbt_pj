@@ -2,10 +2,11 @@ package com.casualapp.android.network;
 
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.JobAttendance;
-import com.casualapp.android.model.JobSignup;
 import com.casualapp.android.model.LoginRequest;
+import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.model.WorkerScheduleResponse;
+
 import java.util.List;
 
 import retrofit2.Call;
@@ -57,44 +58,50 @@ public interface ApiService {
     // Signups
 
     @GET("api/signups")
-    Call<List<JobSignup>> getAllSignups();
+    Call<List<SignupResponse>> getAllSignups();
 
     @POST("api/signups")
-    Call<JobSignup> signUp(
+    Call<SignupResponse> signUp(
             @Query("workerId") Long workerId,
             @Query("jobId") Long jobId
     );
 
     @GET("api/signups/worker/{workerId}")
-    Call<List<JobSignup>> getWorkerSignups(
+    Call<List<SignupResponse>> getWorkerSignups(
             @Path("workerId") Long workerId
     );
 
     @GET("api/signups/job/{jobId}")
-    Call<List<JobSignup>> getJobSignups(
+    Call<List<SignupResponse>> getJobSignups(
             @Path("jobId") Long jobId,
             @Query("coordinatorId") Long coordinatorId
     );
 
     @GET("api/signups/coordinator/{coordinatorId}")
-    Call<List<JobSignup>> getCoordinatorSignups(
+    Call<List<SignupResponse>> getCoordinatorSignups(
             @Path("coordinatorId") Long coordinatorId
     );
+
+
+    // Schedule
 
     @GET("api/schedules/worker/{workerId}")
     Call<WorkerScheduleResponse> getWorkerSchedule(
             @Path("workerId") Long workerId
-        );
+    );
+
+
+    // Signup actions
 
     @PUT("api/signups/{signupId}/approve")
-    Call<JobSignup> approveSignup(
+    Call<SignupResponse> approveSignup(
             @Path("signupId") Long signupId,
             @Query("coordinatorId") Long coordinatorId,
             @Query("reason") String reason
     );
 
     @PUT("api/signups/{signupId}/reject")
-    Call<JobSignup> rejectSignup(
+    Call<SignupResponse> rejectSignup(
             @Path("signupId") Long signupId,
             @Query("coordinatorId") Long coordinatorId,
             @Query("reason") String reason

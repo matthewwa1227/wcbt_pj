@@ -10,9 +10,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.casualapp.backend.dto.signup.SignupResponse;
 import com.casualapp.backend.model.AttendanceStatus;
 import com.casualapp.backend.model.JobAttendance;
-import com.casualapp.backend.model.JobSignup;
 import com.casualapp.backend.service.AttendanceService;
 import com.casualapp.backend.service.JobSignupService;
 
@@ -32,19 +32,19 @@ public class JobSignupController {
     }
 
     @GetMapping
-    public List<JobSignup> getAllSignups() {
+    public List<SignupResponse> getAllSignups() {
         return jobSignupService.getAllSignups();
     }
 
     @GetMapping("/worker/{workerId}")
-    public List<JobSignup> getWorkerSignups(
+    public List<SignupResponse> getWorkerSignups(
             @PathVariable Long workerId
     ) {
         return jobSignupService.getWorkerSignups(workerId);
     }
 
     @GetMapping("/job/{jobId}")
-    public List<JobSignup> getJobSignups(
+    public List<SignupResponse> getJobSignups(
             @PathVariable Long jobId,
             @RequestParam Long coordinatorId
     ) {
@@ -55,7 +55,7 @@ public class JobSignupController {
     }
 
     @GetMapping("/coordinator/{coordinatorId}")
-    public List<JobSignup> getCoordinatorSignups(
+    public List<SignupResponse> getCoordinatorSignups(
             @PathVariable Long coordinatorId
     ) {
         return jobSignupService
@@ -63,15 +63,18 @@ public class JobSignupController {
     }
 
     @PostMapping
-    public JobSignup signUp(
+    public SignupResponse signUp(
             @RequestParam Long workerId,
             @RequestParam Long jobId
     ) {
-        return jobSignupService.signUp(workerId, jobId);
+        return jobSignupService.signUp(
+                workerId,
+                jobId
+        );
     }
 
     @PutMapping("/{signupId}/approve")
-    public JobSignup approveSignup(
+    public SignupResponse approveSignup(
             @PathVariable Long signupId,
             @RequestParam Long coordinatorId,
             @RequestParam(required = false) String reason
@@ -84,7 +87,7 @@ public class JobSignupController {
     }
 
     @PutMapping("/{signupId}/reject")
-    public JobSignup rejectSignup(
+    public SignupResponse rejectSignup(
             @PathVariable Long signupId,
             @RequestParam Long coordinatorId,
             @RequestParam(required = false) String reason
