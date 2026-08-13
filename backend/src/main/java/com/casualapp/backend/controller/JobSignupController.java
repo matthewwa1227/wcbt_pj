@@ -2,15 +2,20 @@ package com.casualapp.backend.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.casualapp.backend.dto.attendance.AttendanceRequest;
 import com.casualapp.backend.dto.attendance.AttendanceResponse;
+import com.casualapp.backend.dto.signup.ApproveSignupRequest;
+import com.casualapp.backend.dto.signup.RejectSignupRequest;
+import com.casualapp.backend.dto.signup.SignupRequest;
 import com.casualapp.backend.dto.signup.SignupResponse;
 import com.casualapp.backend.model.AttendanceStatus;
 import com.casualapp.backend.service.AttendanceService;
@@ -40,13 +45,15 @@ public class JobSignupController {
     public List<SignupResponse> getWorkerSignups(
             @PathVariable Long workerId
     ) {
-        return jobSignupService.getWorkerSignups(workerId);
+        return jobSignupService.getWorkerSignups(
+                workerId
+        );
     }
 
     @GetMapping("/job/{jobId}")
     public List<SignupResponse> getJobSignups(
             @PathVariable Long jobId,
-            @RequestParam Long coordinatorId
+            Long coordinatorId
     ) {
         return jobSignupService.getJobSignups(
                 jobId,
@@ -59,63 +66,110 @@ public class JobSignupController {
             @PathVariable Long coordinatorId
     ) {
         return jobSignupService
-                .getCoordinatorSignups(coordinatorId);
+                .getCoordinatorSignups(
+                        coordinatorId
+                );
     }
 
     @PostMapping
     public SignupResponse signUp(
-            @RequestParam Long workerId,
-            @RequestParam Long jobId
+            @RequestBody SignupRequest request
     ) {
+
+        requireId(
+                request.getWorkerId(),
+                "workerId"
+        );
+
+        requireId(
+                request.getJobId(),
+                "jobId"
+        );
+
         return jobSignupService.signUp(
-                workerId,
-                jobId
+                request.getWorkerId(),
+                request.getJobId()
         );
     }
 
     @PutMapping("/{signupId}/approve")
     public SignupResponse approveSignup(
             @PathVariable Long signupId,
-            @RequestParam Long coordinatorId,
-            @RequestParam(required = false) String reason
+            @RequestBody ApproveSignupRequest request
     ) {
+
+        requireId(
+                request.getCoordinatorId(),
+                "coordinatorId"
+        );
+
         return jobSignupService.approveSignup(
                 signupId,
-                coordinatorId,
-                reason
+                request.getCoordinatorId(),
+                request.getReason()
         );
     }
 
     @PutMapping("/{signupId}/reject")
     public SignupResponse rejectSignup(
             @PathVariable Long signupId,
-            @RequestParam Long coordinatorId,
-            @RequestParam(required = false) String reason
+            @RequestBody RejectSignupRequest request
     ) {
+
+        requireId(
+                request.getCoordinatorId(),
+                "coordinatorId"
+        );
+
         return jobSignupService.rejectSignup(
                 signupId,
-                coordinatorId,
-                reason
+                request.getCoordinatorId(),
+                request.getReason()
         );
     }
 
-        @PutMapping("/{signupId}/attend")
-        public AttendanceResponse markAttendance(
-                @PathVariable Long signupId,
-                @RequestParam Long recordedByUserId,
-                @RequestParam(defaultValue = "COMPLETED")
-                AttendanceStatus status,
-                @RequestParam(defaultValue = "0")
-                Integer lateMinutes,
-                @RequestParam(required = false)
-                String reason
-        ) {
+    @PutMapping("/{signupId}/attend")
+    public AttendanceResponse markAttendance(
+            @PathVariable Long signupId,
+            @RequestBody AttendanceRequest request
+    ) {
+
+        requireId(
+                request.getRecordedByUserId(),
+                "recordedByUserId"
+        );
+
+        AttendanceStatus status =
+                request.getStatus() != null
+                        ? request.getStatus()
+                        : AttendanceStatus.COMPLETED;
+
+        Integer lateMinutes =
+                request.getLateMinutes() != null
+                        ? request.getLateMinutes()
+                        : 0;
+
         return attendanceService.markAttendance(
                 signupId,
-                recordedByUserId,
+                request.getRecordedByUserId(),
                 status,
                 lateMinutes,
-                reason
+                request.getReason()
         );
+    }
+
+    private void requireId(
+            Long id,
+            String fieldName
+    ) {
+
+        if (id == null || id <= 0) {
+
+            throw new ApiException(
+                    HttpStatus.BAD_REQUEST,
+                    "INVALID_REQUEST",
+                    fieldName + " is required"
+            );
         }
+    }
 }

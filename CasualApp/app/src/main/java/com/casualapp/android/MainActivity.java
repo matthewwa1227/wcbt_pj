@@ -12,6 +12,9 @@ import com.casualapp.android.model.Job;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
+import com.casualapp.android.model.ApproveSignupRequest;
+import com.casualapp.android.model.AttendanceRequest;
+import com.casualapp.android.model.SignupRequest;
 
 import java.util.List;
 
@@ -466,8 +469,10 @@ public class MainActivity extends AppCompatActivity {
 
         RetrofitClient.getApiService()
                 .signUp(
-                        selectedWorkerId,
-                        selectedJobId
+                        new SignupRequest(
+                                selectedWorkerId,
+                                selectedJobId
+                        )
                 )
                 .enqueue(
                         new Callback<SignupResponse>() {
@@ -625,8 +630,10 @@ public class MainActivity extends AppCompatActivity {
         RetrofitClient.getApiService()
                 .approveSignup(
                         lastSignupId,
-                        selectedCoordinatorId,
-                        "Approved from Android test screen"
+                        new ApproveSignupRequest(
+                                selectedCoordinatorId,
+                                "Approved from Android test screen"
+                        )
                 )
                 .enqueue(
                         new Callback<SignupResponse>() {
@@ -778,10 +785,12 @@ public class MainActivity extends AppCompatActivity {
         RetrofitClient.getApiService()
                 .markAttendance(
                         lastSignupId,
-                        selectedCoordinatorId,
-                        "COMPLETED",
-                        0,
-                        "Recorded from Android test screen"
+                        new AttendanceRequest(
+                                selectedCoordinatorId,
+                                "COMPLETED",
+                                0,
+                                "Recorded from Android test screen"
+                        )
                 )
                 .enqueue(
                         new Callback<AttendanceResponse>() {

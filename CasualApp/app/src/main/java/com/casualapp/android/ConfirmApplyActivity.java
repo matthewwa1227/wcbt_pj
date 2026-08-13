@@ -12,6 +12,7 @@ import androidx.appcompat.widget.AppCompatButton;
 
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.SignupResponse;
+import com.casualapp.android.model.SignupRequest;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
 
@@ -156,8 +157,10 @@ public class ConfirmApplyActivity extends AppCompatActivity {
 
         RetrofitClient.getApiService()
                 .signUp(
-                        currentWorker.getId(),
-                        job.getId()
+                        new SignupRequest(
+                                currentWorker.getId(),
+                                job.getId()
+                        )
                 )
                 .enqueue(new Callback<>() {
 

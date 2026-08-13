@@ -17,6 +17,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.casualapp.android.model.AttendanceResponse;
 import com.casualapp.android.model.SignupResponse;
+import com.casualapp.android.model.ApproveSignupRequest;
+import com.casualapp.android.model.AttendanceRequest;
+import com.casualapp.android.model.RejectSignupRequest;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
 
@@ -484,8 +487,10 @@ public class CoordinatorApplicantsActivity
         RetrofitClient.getApiService()
                 .approveSignup(
                         signup.getId(),
-                        coordinatorId,
-                        "Approved by coordinator"
+                        new ApproveSignupRequest(
+                                coordinatorId,
+                                "Approved by coordinator"
+                        )
                 )
                 .enqueue(
                         new Callback<SignupResponse>() {
@@ -615,8 +620,10 @@ public class CoordinatorApplicantsActivity
         RetrofitClient.getApiService()
                 .rejectSignup(
                         signup.getId(),
-                        coordinatorId,
-                        reason
+                        new RejectSignupRequest(
+                                coordinatorId,
+                                reason
+                        )
                 )
                 .enqueue(
                         new Callback<SignupResponse>() {
@@ -824,10 +831,12 @@ public class CoordinatorApplicantsActivity
         RetrofitClient.getApiService()
                 .markAttendance(
                         signup.getId(),
-                        coordinatorId,
-                        status,
-                        lateMinutes,
-                        reason
+                        new AttendanceRequest(
+                                coordinatorId,
+                                status,
+                                lateMinutes,
+                                reason
+                        )
                 )
                 .enqueue(
                         new Callback<AttendanceResponse>() {

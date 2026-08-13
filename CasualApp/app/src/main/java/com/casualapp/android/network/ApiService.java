@@ -1,8 +1,12 @@
 package com.casualapp.android.network;
 
-import com.casualapp.android.model.Job;
+import com.casualapp.android.model.ApproveSignupRequest;
+import com.casualapp.android.model.AttendanceRequest;
 import com.casualapp.android.model.AttendanceResponse;
+import com.casualapp.android.model.Job;
 import com.casualapp.android.model.LoginRequest;
+import com.casualapp.android.model.RejectSignupRequest;
+import com.casualapp.android.model.SignupRequest;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.model.WorkerScheduleResponse;
@@ -62,8 +66,7 @@ public interface ApiService {
 
     @POST("api/signups")
     Call<SignupResponse> signUp(
-            @Query("workerId") Long workerId,
-            @Query("jobId") Long jobId
+            @Body SignupRequest request
     );
 
     @GET("api/signups/worker/{workerId}")
@@ -96,26 +99,21 @@ public interface ApiService {
     @PUT("api/signups/{signupId}/approve")
     Call<SignupResponse> approveSignup(
             @Path("signupId") Long signupId,
-            @Query("coordinatorId") Long coordinatorId,
-            @Query("reason") String reason
+            @Body ApproveSignupRequest request
     );
 
     @PUT("api/signups/{signupId}/reject")
     Call<SignupResponse> rejectSignup(
             @Path("signupId") Long signupId,
-            @Query("coordinatorId") Long coordinatorId,
-            @Query("reason") String reason
+            @Body RejectSignupRequest request
     );
 
 
     // Attendance
 
-        @PUT("api/signups/{signupId}/attend")
-        Call<AttendanceResponse> markAttendance(
-                @Path("signupId") Long signupId,
-                @Query("recordedByUserId") Long recordedByUserId,
-                @Query("status") String status,
-                @Query("lateMinutes") Integer lateMinutes,
-                @Query("reason") String reason
-        );
+    @PUT("api/signups/{signupId}/attend")
+    Call<AttendanceResponse> markAttendance(
+            @Path("signupId") Long signupId,
+            @Body AttendanceRequest request
+    );
 }
