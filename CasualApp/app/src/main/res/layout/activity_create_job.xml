@@ -252,20 +252,13 @@
                 android:padding="12dp"
                 android:layout_marginBottom="12dp" />
 
-            <EditText
-                android:id="@+id/etCoordinatorId"
-                android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Coordinator ID，測試用"
-                android:inputType="number"
-                android:paddingHorizontal="12dp"
-                android:layout_marginBottom="20dp" />
-
             <Button
                 android:id="@+id/btnSave"
                 android:layout_width="160dp"
                 android:layout_height="48dp"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="20dp"
                 android:text="保存"
                 android:textColor="@color/on_primary"
                 android:backgroundTint="@color/primary_dark" />

@@ -97,26 +97,47 @@ public class ConfirmApplyActivity extends AppCompatActivity {
                 safeText(job.getTitle(), "未命名職位")
         );
 
-        String jobDate = job.getJobDate();
+        String startDateTime =
+                job.getStartDateTime();
+
+        String endDateTime =
+                job.getEndDateTime();
 
         tvSlotMonth.setText(
-                JobDateFormatter.formatMonth(jobDate)
+                JobDateFormatter.formatMonth(startDateTime)
         );
 
         tvSlotDay.setText(
-                JobDateFormatter.formatDay(jobDate)
+                JobDateFormatter.formatDay(startDateTime)
         );
 
         tvSlotDate.setText(
-                JobDateFormatter.formatFullDate(jobDate)
+                JobDateFormatter.formatFullDate(startDateTime)
         );
 
         tvSlotTime.setText(
-                JobDateFormatter.formatStartTime(jobDate)
+                formatTimeRange(
+                        startDateTime,
+                        endDateTime
+                )
         );
 
-        // No wage field exists in the current backend model.
+        if (job.getHourlyRate() != null) {
+
+        tvSlotPrice.setVisibility(View.VISIBLE);
+
+        tvSlotPrice.setText(
+                "HK$"
+                        + job.getHourlyRate()
+                                .stripTrailingZeros()
+                                .toPlainString()
+                        + "/hr"
+        );
+
+        } else {
+
         tvSlotPrice.setVisibility(View.GONE);
+        }
 
         tvSlotCount.setText("共 1 個工作時段");
     }
@@ -270,6 +291,58 @@ public class ConfirmApplyActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+        private String formatTimeRange(
+                String startDateTime,
+                String endDateTime
+        ) {
+
+        String startTime =
+                extractTime(startDateTime);
+
+        String endTime =
+                extractTime(endDateTime);
+
+        if (startTime == null
+                && endTime == null) {
+
+                return "時間待定";
+        }
+
+        if (startTime != null
+                && endTime == null) {
+
+                return startTime + " 開始";
+        }
+
+        if (startTime == null) {
+                return endTime + " 結束";
+        }
+
+        return startTime
+                + " - "
+                + endTime;
+        }
+
+        private String extractTime(
+                String dateTime
+        ) {
+
+        if (dateTime == null
+                || dateTime.length() < 16) {
+
+                return null;
+        }
+
+        try {
+                return dateTime.substring(
+                        11,
+                        16
+                );
+        } catch (IndexOutOfBoundsException e) {
+                return null;
+        }
+        }
 
     private String safeText(String value, String fallback) {
         return value == null || value.isBlank()

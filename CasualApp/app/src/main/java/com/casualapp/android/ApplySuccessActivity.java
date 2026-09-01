@@ -68,61 +68,87 @@ public class ApplySuccessActivity extends AppCompatActivity {
         );
     }
 
-    private void bindResult(
-            Job job,
-            long signupId,
-            String signupStatus
-    ) {
+        private void bindResult(
+                Job job,
+                long signupId,
+                String signupStatus
+        ) {
         StringBuilder text = new StringBuilder();
 
         if (job != null) {
-            text.append(
-                    safeText(
-                            job.getLocation(),
-                            "地點待定"
-                    )
-            );
 
-            text.append(" - ");
+                text.append(
+                        safeText(
+                                job.getLocation(),
+                                "地點待定"
+                        )
+                );
 
-            text.append(
-                    safeText(
-                            job.getTitle(),
-                            "未命名職位"
-                    )
-            );
+                text.append(" - ");
 
-            text.append("\n");
+                text.append(
+                        safeText(
+                                job.getTitle(),
+                                "未命名職位"
+                        )
+                );
 
-            text.append(
-                    JobDateFormatter.formatFullDate(
-                            job.getJobDate()
-                    )
-            );
+                text.append("\n");
 
-            text.append(" ");
+                String startDateTime =
+                        job.getStartDateTime();
 
-            text.append(
-                    JobDateFormatter.formatStartTime(
-                            job.getJobDate()
-                    )
-            );
+                String endDateTime =
+                        job.getEndDateTime();
+
+                text.append(
+                        JobDateFormatter.formatFullDate(
+                                startDateTime
+                        )
+                );
+
+                text.append(" ");
+
+                text.append(
+                        formatTimeRange(
+                                startDateTime,
+                                endDateTime
+                        )
+                );
+
+                if (job.getHourlyRate() != null) {
+
+                text.append("\n時薪：HK$");
+
+                text.append(
+                        job.getHourlyRate()
+                                .stripTrailingZeros()
+                                .toPlainString()
+                );
+
+                text.append("/hr");
+                }
+
         } else {
-            text.append("申請已提交");
+
+                text.append("申請已提交");
         }
 
         if (signupId >= 0) {
-            text.append("\n申請編號：#");
-            text.append(signupId);
+                text.append("\n申請編號：#");
+                text.append(signupId);
         }
 
         text.append("\n狀態：");
+
         text.append(
                 translateStatus(signupStatus)
         );
 
-        tvJobDetail.setText(text.toString());
-    }
+        tvJobDetail.setText(
+                text.toString()
+        );
+        }
 
     private String translateStatus(String status) {
         if (status == null) {
@@ -174,6 +200,62 @@ public class ApplySuccessActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+
+        private String formatTimeRange(
+                String startDateTime,
+                String endDateTime
+        ) {
+
+        String startTime =
+                extractTime(startDateTime);
+
+        String endTime =
+                extractTime(endDateTime);
+
+        if (startTime == null
+                && endTime == null) {
+
+                return "時間待定";
+        }
+
+        if (startTime != null
+                && endTime == null) {
+
+                return startTime + " 開始";
+        }
+
+        if (startTime == null) {
+
+                return endTime + " 結束";
+        }
+
+        return startTime
+                + " - "
+                + endTime;
+        }
+
+        private String extractTime(
+                String dateTime
+        ) {
+
+        if (dateTime == null
+                || dateTime.length() < 16) {
+
+                return null;
+        }
+
+        try {
+
+                return dateTime.substring(
+                        11,
+                        16
+                );
+
+        } catch (IndexOutOfBoundsException e) {
+
+                return null;
+        }
+        }
 
     private String safeText(
             String value,

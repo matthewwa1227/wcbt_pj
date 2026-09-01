@@ -129,7 +129,7 @@ public class CoordinatorJobsActivity extends AppCompatActivity {
                         + "\n"
                         + safeText(job.getLocation(), "No location")
                         + "\n"
-                        + formatDate(job.getJobDate())
+                        + formatDate(job.getStartDateTime())
                         + "\nFilled: "
                         + job.getFilledSlots()
                         + " / "

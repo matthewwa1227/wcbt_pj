@@ -9,8 +9,12 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.casualapp.android.model.CreateJobRequest;
 import com.casualapp.android.model.Job;
+import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
+
+import java.math.BigDecimal;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -28,7 +32,6 @@ public class CreateJobActivity extends AppCompatActivity {
     private EditText etEndTime;
     private EditText etMeal;
     private EditText etNotes;
-    private EditText etCoordinatorId;
 
     private CheckBox cbCantonese;
     private CheckBox cbMandarin;
@@ -42,8 +45,6 @@ public class CreateJobActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_job);
 
-        Toast.makeText(this, "Create Job screen opened", Toast.LENGTH_SHORT).show();
-
         etWorkplace = findViewById(R.id.etWorkplace);
         etDepartment = findViewById(R.id.etDepartment);
         etPosition = findViewById(R.id.etPosition);
@@ -54,7 +55,6 @@ public class CreateJobActivity extends AppCompatActivity {
         etEndTime = findViewById(R.id.etEndTime);
         etMeal = findViewById(R.id.etMeal);
         etNotes = findViewById(R.id.etNotes);
-        etCoordinatorId = findViewById(R.id.etCoordinatorId);
 
         cbCantonese = findViewById(R.id.cbCantonese);
         cbMandarin = findViewById(R.id.cbMandarin);
@@ -63,27 +63,56 @@ public class CreateJobActivity extends AppCompatActivity {
         btnSave = findViewById(R.id.btnSave);
         btnBack = findViewById(R.id.btnBack);
 
-        etCoordinatorId.setText("1");
-        etDate.setText("2026-07-10");
-        etStartTime.setText("18:00");
-        etEndTime.setText("23:00");
-
         btnBack.setOnClickListener(v -> finish());
         btnSave.setOnClickListener(v -> createJob());
     }
 
     private void createJob() {
+
+        /*
+         * Coordinator comes from the authenticated session.
+         * The user should never need to manually enter an
+         * internal database ID.
+         */
+        User currentUser = UserSession.getCurrentUser();
+
+        if (currentUser == null) {
+            Toast.makeText(
+                    this,
+                    "登入資料已失效，請重新登入",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        if (!currentUser.isCoordinator()) {
+            Toast.makeText(
+                    this,
+                    "只有 Coordinator 可以建立工作",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
+        if (currentUser.getId() == null) {
+            Toast.makeText(
+                    this,
+                    "無法取得 Coordinator ID",
+                    Toast.LENGTH_LONG
+            ).show();
+            return;
+        }
+
         String workplace = getText(etWorkplace);
         String department = getText(etDepartment);
         String position = getText(etPosition);
-        String hourlyRate = getText(etHourlyRate);
+        String hourlyRateText = getText(etHourlyRate);
         String totalSlotsText = getText(etTotalSlots);
         String date = getText(etDate);
         String startTime = getText(etStartTime);
         String endTime = getText(etEndTime);
         String meal = getText(etMeal);
         String notes = getText(etNotes);
-        String coordinatorIdText = getText(etCoordinatorId);
 
         if (workplace.isEmpty()) {
             etWorkplace.setError("請輸入工作地點");
@@ -92,6 +121,11 @@ public class CreateJobActivity extends AppCompatActivity {
 
         if (position.isEmpty()) {
             etPosition.setError("請輸入職位");
+            return;
+        }
+
+        if (hourlyRateText.isEmpty()) {
+            etHourlyRate.setError("請輸入時薪");
             return;
         }
 
@@ -110,19 +144,30 @@ public class CreateJobActivity extends AppCompatActivity {
             return;
         }
 
-        if (coordinatorIdText.isEmpty()) {
-            etCoordinatorId.setError("請輸入 Coordinator ID");
+        if (endTime.isEmpty()) {
+            etEndTime.setError("請輸入結束時間");
             return;
         }
 
+        BigDecimal hourlyRate;
         int totalSlots;
-        Long coordinatorId;
+
+        try {
+            hourlyRate = new BigDecimal(hourlyRateText);
+        } catch (NumberFormatException e) {
+            etHourlyRate.setError("時薪必須是有效數字");
+            return;
+        }
 
         try {
             totalSlots = Integer.parseInt(totalSlotsText);
-            coordinatorId = Long.parseLong(coordinatorIdText);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "人數和 Coordinator ID 必須是數字", Toast.LENGTH_SHORT).show();
+            etTotalSlots.setError("人數必須是整數");
+            return;
+        }
+
+        if (hourlyRate.compareTo(BigDecimal.ZERO) <= 0) {
+            etHourlyRate.setError("時薪必須大於 0");
             return;
         }
 
@@ -131,110 +176,128 @@ public class CreateJobActivity extends AppCompatActivity {
             return;
         }
 
-        String jobDate = date + "T" + startTime + ":00";
+        String startDateTime =
+                toIsoDateTime(date, startTime);
 
+        String endDateTime =
+                toIsoDateTime(date, endTime);
+
+        /*
+         * Rate and shift times are no longer stored inside
+         * description. They now have proper structured fields.
+         */
         String description = buildDescription(
                 department,
-                hourlyRate,
-                startTime,
-                endTime,
                 meal,
                 notes
         );
 
-        Job job = new Job();
-        job.setTitle(position);
-        job.setDescription(description);
-        job.setLocation(workplace);
-        job.setJobDate(jobDate);
-        job.setTotalSlots(totalSlots);
-        job.setFilledSlots(0);
-        job.setStatus("OPEN");
+        CreateJobRequest request =
+                new CreateJobRequest(
+                        currentUser.getId(),
+                        position,
+                        description,
+                        workplace,
+                        startDateTime,
+                        endDateTime,
+                        hourlyRate,
+                        totalSlots
+                );
 
-        btnSave.setEnabled(false);
-        btnSave.setText("保存中...");
+        setSavingState(true);
 
-        RetrofitClient.getApiService().createJob(job, coordinatorId).enqueue(new Callback<>() {
-            @Override
-            public void onResponse(Call<Job> call, Response<Job> response) {
-                btnSave.setEnabled(true);
-                btnSave.setText("保存");
+        RetrofitClient
+                .getApiService()
+                .createJob(request)
+                .enqueue(new Callback<>() {
 
-                if (response.isSuccessful() && response.body() != null) {
-                    Toast.makeText(
-                            CreateJobActivity.this,
-                            "工作已建立：" + response.body().getTitle(),
-                            Toast.LENGTH_SHORT
-                    ).show();
+                    @Override
+                    public void onResponse(
+                            Call<Job> call,
+                            Response<Job> response
+                    ) {
 
-                    finish();
-                } else {
-                    Toast.makeText(
-                            CreateJobActivity.this,
-                            "建立失敗：" + response.code(),
-                            Toast.LENGTH_LONG
-                    ).show();
-                }
-            }
+                        setSavingState(false);
 
-            @Override
-            public void onFailure(Call<Job> call, Throwable t) {
-                btnSave.setEnabled(true);
-                btnSave.setText("保存");
+                        if (response.isSuccessful()
+                                && response.body() != null) {
 
-                Toast.makeText(
-                        CreateJobActivity.this,
-                        "Failed: " + t.getMessage(),
-                        Toast.LENGTH_LONG
-                ).show();
-            }
-        });
+                            Toast.makeText(
+                                    CreateJobActivity.this,
+                                    "工作已建立："
+                                            + response.body().getTitle(),
+                                    Toast.LENGTH_SHORT
+                            ).show();
+
+                            finish();
+
+                        } else {
+
+                            Toast.makeText(
+                                    CreateJobActivity.this,
+                                    "建立失敗：HTTP "
+                                            + response.code(),
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(
+                            Call<Job> call,
+                            Throwable t
+                    ) {
+
+                        setSavingState(false);
+
+                        Toast.makeText(
+                                CreateJobActivity.this,
+                                "連線失敗："
+                                        + t.getMessage(),
+                                Toast.LENGTH_LONG
+                        ).show();
+                    }
+                });
     }
 
     private String buildDescription(
             String department,
-            String hourlyRate,
-            String startTime,
-            String endTime,
             String meal,
             String notes
     ) {
+
         StringBuilder sb = new StringBuilder();
 
         if (!department.isEmpty()) {
-            sb.append("部門：").append(department).append("\n");
+            sb.append("部門：")
+                    .append(department)
+                    .append("\n");
         }
-
-        if (!hourlyRate.isEmpty()) {
-            sb.append("時薪：$").append(hourlyRate).append("\n");
-        }
-
-        sb.append("時間：").append(startTime);
-
-        if (!endTime.isEmpty()) {
-            sb.append(" - ").append(endTime);
-        }
-
-        sb.append("\n");
 
         String languages = getSelectedLanguages();
 
         if (!languages.isEmpty()) {
-            sb.append("語言：").append(languages).append("\n");
+            sb.append("語言：")
+                    .append(languages)
+                    .append("\n");
         }
 
         if (!meal.isEmpty()) {
-            sb.append("膳食：").append(meal).append("\n");
+            sb.append("膳食：")
+                    .append(meal)
+                    .append("\n");
         }
 
         if (!notes.isEmpty()) {
-            sb.append("備注：").append(notes);
+            sb.append("備注：")
+                    .append(notes);
         }
 
-        return sb.toString();
+        return sb.toString().trim();
     }
 
     private String getSelectedLanguages() {
+
         StringBuilder sb = new StringBuilder();
 
         if (cbCantonese.isChecked()) {
@@ -252,7 +315,42 @@ public class CreateJobActivity extends AppCompatActivity {
         return sb.toString().trim();
     }
 
-    private String getText(EditText editText) {
-        return editText.getText().toString().trim();
+    private String toIsoDateTime(
+            String date,
+            String time
+    ) {
+
+        /*
+         * Android input normally gives HH:mm.
+         * Spring LocalDateTime expects an ISO value such as:
+         *
+         * 2026-09-05T18:00:00
+         */
+        if (time.length() == 5) {
+            return date + "T" + time + ":00";
+        }
+
+        return date + "T" + time;
+    }
+
+    private void setSavingState(
+            boolean saving
+    ) {
+
+        btnSave.setEnabled(!saving);
+        btnSave.setText(
+                saving
+                        ? "保存中..."
+                        : "保存"
+        );
+    }
+
+    private String getText(
+            EditText editText
+    ) {
+        return editText
+                .getText()
+                .toString()
+                .trim();
     }
 }

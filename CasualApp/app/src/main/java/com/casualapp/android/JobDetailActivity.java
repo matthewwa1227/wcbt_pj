@@ -101,8 +101,7 @@ public class JobDetailActivity extends AppCompatActivity {
         cbSlot1.setChecked(true);
         cbSlot1.setVisibility(View.GONE);
 
-        // The backend does not currently provide a wage field.
-        tvSlot1Price.setVisibility(View.GONE);
+        tvSlot1Price.setVisibility(View.VISIBLE);
 
         cardSlot1.setBackgroundResource(
                 R.drawable.bg_slot_selected
@@ -121,22 +120,33 @@ public class JobDetailActivity extends AppCompatActivity {
         // There is no requirements field in the current Job model.
         tvRequirements.setText("未提供額外要求");
 
-        String jobDate = job.getJobDate();
+       String startDateTime =
+        job.getStartDateTime();
+
+        String endDateTime =
+                job.getEndDateTime();
 
         tvSlot1Month.setText(
-                JobDateFormatter.formatMonth(jobDate)
+                JobDateFormatter.formatMonth(startDateTime)
         );
 
         tvSlot1Day.setText(
-                JobDateFormatter.formatDay(jobDate)
+                JobDateFormatter.formatDay(startDateTime)
         );
 
         tvSlot1Date.setText(
-                JobDateFormatter.formatFullDate(jobDate)
+                JobDateFormatter.formatFullDate(startDateTime)
         );
 
         tvSlot1Time.setText(
-                JobDateFormatter.formatStartTime(jobDate)
+                formatTimeRange(
+                        startDateTime,
+                        endDateTime
+                )
+        );
+
+        tvSlot1Price.setText(
+                formatHourlyRate()
         );
 
         updateAvailability();
@@ -255,7 +265,70 @@ public class JobDetailActivity extends AppCompatActivity {
         startActivity(intent);
         finish();
     }
+        private String formatTimeRange(
+                String startDateTime,
+                String endDateTime
+        ) {
 
+        String startTime =
+                extractTime(startDateTime);
+
+        String endTime =
+                extractTime(endDateTime);
+
+        if (startTime == null
+                && endTime == null) {
+
+                return "時間待定";
+        }
+
+        if (startTime != null
+                && endTime == null) {
+
+                return startTime + " 開始";
+        }
+
+        if (startTime == null) {
+                return endTime + " 結束";
+        }
+
+        return startTime
+                + " - "
+                + endTime;
+        }
+
+        private String extractTime(
+                String dateTime
+        ) {
+
+        if (dateTime == null
+                || dateTime.length() < 16) {
+
+                return null;
+        }
+
+        try {
+                return dateTime.substring(
+                        11,
+                        16
+                );
+        } catch (IndexOutOfBoundsException e) {
+                return null;
+        }
+        }
+
+        private String formatHourlyRate() {
+
+        if (job.getHourlyRate() == null) {
+                return "時薪待定";
+        }
+
+        return "HK$"
+                + job.getHourlyRate()
+                        .stripTrailingZeros()
+                        .toPlainString()
+                + "/hr";
+        }
     private String safeText(String value, String fallback) {
         return value == null || value.isBlank()
                 ? fallback

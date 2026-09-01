@@ -3,6 +3,7 @@ package com.casualapp.android.network;
 import com.casualapp.android.model.ApproveSignupRequest;
 import com.casualapp.android.model.AttendanceRequest;
 import com.casualapp.android.model.AttendanceResponse;
+import com.casualapp.android.model.CreateJobRequest;
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.LoginRequest;
 import com.casualapp.android.model.RejectSignupRequest;
@@ -42,21 +43,20 @@ public interface ApiService {
     );
 
 
-    // Jobs
+        // Jobs
 
-    @GET("api/jobs")
-    Call<List<Job>> getAllJobs();
+        @GET("api/jobs")
+        Call<List<Job>> getAllJobs();
 
-    @GET("api/jobs/coordinator/{coordinatorId}")
-    Call<List<Job>> getJobsByCoordinator(
-            @Path("coordinatorId") Long coordinatorId
-    );
+        @GET("api/jobs/coordinator/{coordinatorId}")
+        Call<List<Job>> getJobsByCoordinator(
+                @Path("coordinatorId") Long coordinatorId
+        );
 
-    @POST("api/jobs")
-    Call<Job> createJob(
-            @Body Job job,
-            @Query("coordinatorId") Long coordinatorId
-    );
+        @POST("api/jobs")
+        Call<Job> createJob(
+                @Body CreateJobRequest request
+        );
 
 
     // Signups

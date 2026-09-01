@@ -1,36 +1,72 @@
 package com.casualapp.android.model;
 
-public class Job implements java.io.Serializable {
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+public class Job implements Serializable {
+
     private Long id;
+
     private String title;
+
     private String description;
+
     private String location;
-    private String jobDate;
+
+    private String startDateTime;
+
+    private String endDateTime;
+
+    private BigDecimal hourlyRate;
+
     private int totalSlots;
+
     private int filledSlots;
+
     private String status;
-    private User coordinator;
+
+    private Long coordinatorId;
+
+    private String coordinatorName;
+
     private String createdAt;
 
-    // Default constructor
-    public Job() {}
 
-    // All-args constructor
-    public Job(Long id, String title, String description, String location, String jobDate,
-               int totalSlots, int filledSlots, String status, User coordinator, String createdAt) {
+    public Job() {
+    }
+
+
+    public Job(
+            Long id,
+            String title,
+            String description,
+            String location,
+            String startDateTime,
+            String endDateTime,
+            BigDecimal hourlyRate,
+            int totalSlots,
+            int filledSlots,
+            String status,
+            Long coordinatorId,
+            String coordinatorName,
+            String createdAt
+    ) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.location = location;
-        this.jobDate = jobDate;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.hourlyRate = hourlyRate;
         this.totalSlots = totalSlots;
         this.filledSlots = filledSlots;
         this.status = status;
-        this.coordinator = coordinator;
+        this.coordinatorId = coordinatorId;
+        this.coordinatorName = coordinatorName;
         this.createdAt = createdAt;
     }
 
-    // Boolean helper methods
+
     public boolean isOpen() {
         return "OPEN".equals(status);
     }
@@ -51,39 +87,130 @@ public class Job implements java.io.Serializable {
         return "CANCELLED".equals(status);
     }
 
-    // Getters & Setters
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getLocation() { return location; }
-    public void setLocation(String location) { this.location = location; }
 
-    public String getJobDate() { return jobDate; }
-    public void setJobDate(String jobDate) { this.jobDate = jobDate; }
+    public String getTitle() {
+        return title;
+    }
 
-    public int getTotalSlots() { return totalSlots; }
-    public void setTotalSlots(int totalSlots) { this.totalSlots = totalSlots; }
+    public void setTitle(String title) {
+        this.title = title;
+    }
 
-    public int getFilledSlots() { return filledSlots; }
-    public void setFilledSlots(int filledSlots) { this.filledSlots = filledSlots; }
 
-    public String getStatus() { return status; }
-    public void setStatus(String status) { this.status = status; }
+    public String getDescription() {
+        return description;
+    }
 
-    public User getCoordinator() { return coordinator; }
-    public void setCoordinator(User coordinator) { this.coordinator = coordinator; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+
+    public String getStartDateTime() {
+        return startDateTime;
+    }
+
+    public void setStartDateTime(String startDateTime) {
+        this.startDateTime = startDateTime;
+    }
+
+
+    public String getEndDateTime() {
+        return endDateTime;
+    }
+
+    public void setEndDateTime(String endDateTime) {
+        this.endDateTime = endDateTime;
+    }
+
+
+    public BigDecimal getHourlyRate() {
+        return hourlyRate;
+    }
+
+    public void setHourlyRate(BigDecimal hourlyRate) {
+        this.hourlyRate = hourlyRate;
+    }
+
+
+    public int getTotalSlots() {
+        return totalSlots;
+    }
+
+    public void setTotalSlots(int totalSlots) {
+        this.totalSlots = totalSlots;
+    }
+
+
+    public int getFilledSlots() {
+        return filledSlots;
+    }
+
+    public void setFilledSlots(int filledSlots) {
+        this.filledSlots = filledSlots;
+    }
+
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
+    public Long getCoordinatorId() {
+        return coordinatorId;
+    }
+
+    public void setCoordinatorId(Long coordinatorId) {
+        this.coordinatorId = coordinatorId;
+    }
+
+
+    public String getCoordinatorName() {
+        return coordinatorName;
+    }
+
+    public void setCoordinatorName(String coordinatorName) {
+        this.coordinatorName = coordinatorName;
+    }
+
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
 
     @Override
     public String toString() {
-        return "Job{" + "id=" + id + ", title='" + title + '\'' + ", status='" + status + '\'' + '}';
+        return "Job{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", status='" + status + '\'' +
+                '}';
     }
 }
