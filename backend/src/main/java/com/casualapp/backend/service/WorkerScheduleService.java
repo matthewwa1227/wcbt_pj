@@ -194,25 +194,32 @@ public class WorkerScheduleService {
         item.setTitle(job.getTitle());
         item.setLocation(job.getLocation());
 
-        LocalDateTime jobDate = job.getJobDate();
+        LocalDateTime startDateTime = job.getJobDate();
+        LocalDateTime endDateTime = job.getEndDateTime();
 
         item.setDate(
-                jobDate == null
+                startDateTime == null
                         ? null
-                        : jobDate.toLocalDate().format(DATE_FORMATTER)
+                        : startDateTime
+                                .toLocalDate()
+                                .format(DATE_FORMATTER)
         );
 
         item.setStartTime(
-                jobDate == null
+                startDateTime == null
                         ? null
-                        : jobDate.toLocalTime().format(TIME_FORMATTER)
+                        : startDateTime
+                                .toLocalTime()
+                                .format(TIME_FORMATTER)
         );
 
-        /*
-         * The current Job entity stores one LocalDateTime only.
-         * Keep endTime null until an end-time field is added to Job.
-         */
-        item.setEndTime(null);
+        item.setEndTime(
+                endDateTime == null
+                        ? null
+                        : endDateTime
+                                .toLocalTime()
+                                .format(TIME_FORMATTER)
+        );
 
         return item;
     }
