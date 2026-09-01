@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: casualpass
       POSTGRES_DB: casualapp
     ports:
-      - "127.0.0.1:25432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 volumes:
