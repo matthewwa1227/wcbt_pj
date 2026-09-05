@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.casualapp.backend.controller.ApiException;
+import com.casualapp.backend.dto.signup.SignupActionResponse;
 import com.casualapp.backend.dto.signup.SignupResponse;
+import com.casualapp.backend.mapper.SignupMapper;
 import com.casualapp.backend.model.Job;
 import com.casualapp.backend.model.JobSignup;
 import com.casualapp.backend.model.JobStatus;
@@ -24,27 +26,33 @@ public class JobSignupService {
     private final JobSignupRepository jobSignupRepository;
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
+    private final SignupMapper signupMapper;
 
     public JobSignupService(
             JobSignupRepository jobSignupRepository,
             UserRepository userRepository,
-            JobRepository jobRepository
+            JobRepository jobRepository,
+            SignupMapper signupMapper
     ) {
         this.jobSignupRepository = jobSignupRepository;
         this.userRepository = userRepository;
         this.jobRepository = jobRepository;
+        this.signupMapper = signupMapper;
     }
 
     @Transactional(readOnly = true)
     public List<SignupResponse> getAllSignups() {
+
         return jobSignupRepository.findAll()
                 .stream()
-                .map(this::toResponse)
+                .map(signupMapper::toResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
-    public List<SignupResponse> getWorkerSignups(Long workerId) {
+    public List<SignupResponse> getWorkerSignups(
+            Long workerId
+    ) {
 
         requireRole(
                 workerId,
@@ -52,9 +60,10 @@ public class JobSignupService {
                 "Worker"
         );
 
-        return jobSignupRepository.findByWorkerId(workerId)
+        return jobSignupRepository
+                .findByWorkerId(workerId)
                 .stream()
-                .map(this::toResponse)
+                .map(signupMapper::toResponse)
                 .toList();
     }
 
@@ -77,9 +86,10 @@ public class JobSignupService {
                 job
         );
 
-        return jobSignupRepository.findByJobId(jobId)
+        return jobSignupRepository
+                .findByJobId(jobId)
                 .stream()
-                .map(this::toResponse)
+                .map(signupMapper::toResponse)
                 .toList();
     }
 
@@ -97,12 +107,12 @@ public class JobSignupService {
         return jobSignupRepository
                 .findByJobCoordinatorId(coordinatorId)
                 .stream()
-                .map(this::toResponse)
+                .map(signupMapper::toResponse)
                 .toList();
     }
 
     @Transactional
-    public SignupResponse signUp(
+    public SignupActionResponse signUp(
             Long workerId,
             Long jobId
     ) {
@@ -116,6 +126,7 @@ public class JobSignupService {
         Job job = requireJob(jobId);
 
         if (job.getStatus() != JobStatus.OPEN) {
+
             throw new ApiException(
                     HttpStatus.CONFLICT,
                     "JOB_NOT_OPEN",
@@ -158,11 +169,11 @@ public class JobSignupService {
         JobSignup savedSignup =
                 jobSignupRepository.save(signup);
 
-        return toResponse(savedSignup);
+        return signupMapper.toActionResponse(savedSignup);
     }
 
     @Transactional
-    public SignupResponse approveSignup(
+    public SignupActionResponse approveSignup(
             Long signupId,
             Long coordinatorId,
             String reason
@@ -237,11 +248,11 @@ public class JobSignupService {
         JobSignup savedSignup =
                 jobSignupRepository.save(signup);
 
-        return toResponse(savedSignup);
+        return signupMapper.toActionResponse(savedSignup);
     }
 
     @Transactional
-    public SignupResponse rejectSignup(
+    public SignupActionResponse rejectSignup(
             Long signupId,
             Long coordinatorId,
             String reason
@@ -281,7 +292,7 @@ public class JobSignupService {
         JobSignup savedSignup =
                 jobSignupRepository.save(signup);
 
-        return toResponse(savedSignup);
+        return signupMapper.toActionResponse(savedSignup);
     }
 
     public JobSignup requireSignup(
@@ -374,95 +385,6 @@ public class JobSignupService {
                     "Only pending applications can be approved or rejected"
             );
         }
-    }
-
-    private SignupResponse toResponse(
-            JobSignup signup
-    ) {
-
-        SignupResponse response =
-                new SignupResponse();
-
-        response.setId(
-                signup.getId()
-        );
-
-        if (signup.getWorker() != null) {
-
-            response.setWorkerId(
-                    signup.getWorker().getId()
-            );
-
-            response.setWorkerName(
-                    signup.getWorker().getName()
-            );
-
-            response.setWorkerPhoneNumber(
-                    signup.getWorker().getPhoneNumber()
-            );
-        }
-
-        if (signup.getJob() != null) {
-
-            response.setJobId(
-                    signup.getJob().getId()
-            );
-
-            response.setJobTitle(
-                    signup.getJob().getTitle()
-            );
-
-            response.setJobLocation(
-                    signup.getJob().getLocation()
-            );
-
-            response.setJobDate(
-                    signup.getJob().getJobDate() == null
-                            ? null
-                            : signup.getJob()
-                                    .getJobDate()
-                                    .toString()
-            );
-        }
-
-        response.setStatus(
-                signup.getStatus() == null
-                        ? null
-                        : signup.getStatus().name()
-        );
-
-        response.setSignupTime(
-                signup.getSignupTime() == null
-                        ? null
-                        : signup.getSignupTime()
-                                .toString()
-        );
-
-        response.setUpdatedAt(
-                signup.getUpdatedAt() == null
-                        ? null
-                        : signup.getUpdatedAt()
-                                .toString()
-        );
-
-        response.setActionReason(
-                signup.getActionReason()
-        );
-
-        if (signup.getActionedBy() != null) {
-
-            response.setActionedByUserId(
-                    signup.getActionedBy()
-                            .getId()
-            );
-
-            response.setActionedByName(
-                    signup.getActionedBy()
-                            .getName()
-            );
-        }
-
-        return response;
     }
 
     private boolean hasText(

@@ -1,10 +1,13 @@
 package com.casualapp.backend.controller;
 
-import com.casualapp.backend.model.User;
-import com.casualapp.backend.repository.UserRepository;
-import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.casualapp.backend.dto.user.UserSummaryResponse;
+import com.casualapp.backend.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/users")
@@ -17,12 +20,10 @@ public class UserController {
     }
 
     @GetMapping
-    public List<User> getAllUsers() {
-        return userRepository.findAll();
-    }
-
-    @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userRepository.save(user);
+    public List<UserSummaryResponse> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(UserSummaryResponse::from)
+                .toList();
     }
 }

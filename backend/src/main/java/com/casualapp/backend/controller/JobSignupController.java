@@ -15,6 +15,7 @@ import com.casualapp.backend.dto.attendance.AttendanceRequest;
 import com.casualapp.backend.dto.attendance.AttendanceResponse;
 import com.casualapp.backend.dto.signup.ApproveSignupRequest;
 import com.casualapp.backend.dto.signup.RejectSignupRequest;
+import com.casualapp.backend.dto.signup.SignupActionResponse;
 import com.casualapp.backend.dto.signup.SignupRequest;
 import com.casualapp.backend.dto.signup.SignupResponse;
 import com.casualapp.backend.model.AttendanceStatus;
@@ -38,6 +39,7 @@ public class JobSignupController {
 
     @GetMapping
     public List<SignupResponse> getAllSignups() {
+
         return jobSignupService.getAllSignups();
     }
 
@@ -45,6 +47,7 @@ public class JobSignupController {
     public List<SignupResponse> getWorkerSignups(
             @PathVariable Long workerId
     ) {
+
         return jobSignupService.getWorkerSignups(
                 workerId
         );
@@ -55,6 +58,7 @@ public class JobSignupController {
             @PathVariable Long jobId,
             Long coordinatorId
     ) {
+
         return jobSignupService.getJobSignups(
                 jobId,
                 coordinatorId
@@ -65,6 +69,7 @@ public class JobSignupController {
     public List<SignupResponse> getCoordinatorSignups(
             @PathVariable Long coordinatorId
     ) {
+
         return jobSignupService
                 .getCoordinatorSignups(
                         coordinatorId
@@ -72,7 +77,7 @@ public class JobSignupController {
     }
 
     @PostMapping
-    public SignupResponse signUp(
+    public SignupActionResponse signUp(
             @RequestBody SignupRequest request
     ) {
 
@@ -93,7 +98,7 @@ public class JobSignupController {
     }
 
     @PutMapping("/{signupId}/approve")
-    public SignupResponse approveSignup(
+    public SignupActionResponse approveSignup(
             @PathVariable Long signupId,
             @RequestBody ApproveSignupRequest request
     ) {
@@ -111,7 +116,7 @@ public class JobSignupController {
     }
 
     @PutMapping("/{signupId}/reject")
-    public SignupResponse rejectSignup(
+    public SignupActionResponse rejectSignup(
             @PathVariable Long signupId,
             @RequestBody RejectSignupRequest request
     ) {
