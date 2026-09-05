@@ -1,204 +1,137 @@
-# DTO Refactoring Plan
+# DTO Refactoring
 
-DTO means **Data Transfer Object**.
+DTO means **Data Transfer Object**. DTOs define the data accepted or returned by an API operation and keep the REST contract separate from JPA persistence entities.
 
-DTOs define the exact data accepted or returned by an API operation. They keep API contracts separate from JPA entities and prevent the frontend from depending on the database model.
+## Current state
 
-## Target structure
+The DTO refactor for the currently implemented API endpoints is complete on the backend.
+
+Current backend structure:
 
 ```text
 dto/
 ├── auth/
 │   ├── LoginRequest.java
-│   ├── LoginResponse.java
-│   ├── RegisterWorkerRequest.java
-│   └── RegisterWorkerResponse.java
-│
-├── job/
-│   ├── CreateJobRequest.java
-│   ├── UpdateJobRequest.java
-│   ├── JobListItemResponse.java
-│   └── JobDetailResponse.java
-│
-├── signup/
-│   ├── SignupRequest.java
-│   ├── SignupResponse.java
-│   ├── ApproveSignupRequest.java
-│   └── RejectSignupRequest.java
-│
+│   └── LoginResponse.java
 ├── attendance/
 │   ├── AttendanceRequest.java
-│   ├── AttendanceResponse.java
-│   └── AttendanceHistoryResponse.java
-│
+│   └── AttendanceResponse.java
+├── job/
+│   ├── CreateJobRequest.java
+│   └── JobResponse.java
 ├── schedule/
-│   ├── WorkerScheduleResponse.java
-│   └── WorkerScheduleItemResponse.java
-│
-├── performance/
-│   ├── WorkerPerformanceSummaryResponse.java
-│   ├── WorkerPerformanceDetailResponse.java
-│   ├── MonthlyPerformanceResponse.java
-│   └── EarningsSummaryResponse.java
-│
-└── common/
-    ├── ApiErrorResponse.java
-    └── PageResponse.java
+│   ├── WorkerScheduleItemResponse.java
+│   └── WorkerScheduleResponse.java
+├── signup/
+│   ├── ApproveSignupRequest.java
+│   ├── RejectSignupRequest.java
+│   ├── SignupActionResponse.java
+│   ├── SignupRequest.java
+│   └── SignupResponse.java
+└── user/
+    └── UserSummaryResponse.java
 ```
 
-## Current state
+The REST controllers no longer return JPA entities for the implemented user, job, signup, attendance, authentication and schedule flows.
 
-The current backend already has:
+The Android client mirrors the API contract with request/response models. Signup mutations use `SignupActionResponse`, while signup GET endpoints continue to use the larger `SignupResponse` required by application screens.
+
+## Signup response split
+
+Read operations and mutation operations intentionally use different response shapes.
+
+### SignupResponse
+
+Used by signup GET endpoints. It contains the information required to render applications, including worker, job, status and action details.
+
+### SignupActionResponse
+
+Used by:
 
 ```text
-WorkerScheduleItemResponse
-WorkerScheduleResponse
+POST /api/signups
+PUT /api/signups/{signupId}/approve
+PUT /api/signups/{signupId}/reject
 ```
 
-They currently sit directly under `dto/`. They can later move into `dto/schedule/` when the rest of the package hierarchy is introduced.
-
-Transport classes currently outside the target location include:
-
-- `LoginRequest` under `model`
-- `ApiErrorResponse` under `controller`
-
-These should be moved only when imports and API tests are updated in the same change.
-
-## Migration order
-
-### Phase 1: Schedule
-
-- Keep the existing schedule response stable.
-- Move the classes into `dto/schedule`.
-- Update imports in `WorkerScheduleController` and `WorkerScheduleService`.
-- Confirm Android Gson parsing still works.
-
-### Phase 2: Performance
-
-Add response DTOs before building the Android table:
+It contains only:
 
 ```text
-WorkerPerformanceSummaryResponse
-WorkerPerformanceDetailResponse
-MonthlyPerformanceResponse
-EarningsSummaryResponse
+id
+status
+updatedAt
+actionReason
 ```
 
-Performance DTOs should expose calculated values, not JPA relationships.
+This keeps action responses focused and prevents mutation endpoints from returning data that the caller does not need.
 
-### Phase 3: Attendance
+## Request DTOs
 
-Replace multiple attendance query parameters with a request body:
+Write operations use request DTOs rather than accepting persistence entities or large collections of query parameters.
 
-```java
-public class AttendanceRequest {
-    private Long recordedByUserId;
-    private String status;
-    private Integer lateMinutes;
-    private String reason;
-}
-```
-
-Return an `AttendanceResponse` rather than a complete `JobAttendance` entity.
-
-### Phase 4: Signup actions
-
-Add focused request and response classes:
+Examples:
 
 ```text
+CreateJobRequest
 SignupRequest
-SignupResponse
 ApproveSignupRequest
 RejectSignupRequest
+AttendanceRequest
+LoginRequest
 ```
 
-This makes action reasons and acting users explicit and easier to validate.
+## Mapping
 
-### Phase 5: Authentication and registration
-
-Move `LoginRequest` out of `model`.
-
-Add:
+Entity-to-DTO conversion is currently handled with focused mapping code, including:
 
 ```text
-LoginResponse
-RegisterWorkerRequest
-RegisterWorkerResponse
+JobMapper
+SignupMapper
 ```
 
-Do not expose password hashes, internal entity relationships or unrestricted role fields.
-
-### Phase 6: Jobs
-
-Separate list and detail contracts:
-
-```text
-JobListItemResponse
-JobDetailResponse
-```
-
-Use `CreateJobRequest` and `UpdateJobRequest` for writes.
-
-### Phase 7: Common responses
-
-Move structured errors into:
-
-```text
-dto/common/ApiErrorResponse.java
-```
-
-Add a generic paginated response when list APIs require pagination.
+Manual mapping is preferred while the number of mappings is small. A mapping framework should only be introduced if the mapping layer becomes repetitive enough to justify the dependency.
 
 ## DTO design rules
 
 A DTO should normally contain:
 
-- Fields
-- Constructors
-- Getters and setters
-- Simple serialization annotations when necessary
+- fields required by the API contract
+- constructors
+- getters and setters
+- simple serialization annotations when necessary
 
 A DTO should not contain:
 
 - JPA annotations
-- Repository references
-- Service calls
-- Database save methods
-- Lazy-loaded entity collections
-- Authoritative business calculations
+- repository references
+- service calls
+- database save methods
+- lazy-loaded entity collections
+- authoritative business calculations
 
-## Mapping
+## Compatibility workflow
 
-Initially, mapping can remain explicit inside a service:
+When changing an API contract:
 
-```java
-WorkerScheduleItemResponse response = new WorkerScheduleItemResponse();
-response.setJobId(job.getId());
-response.setTitle(job.getTitle());
-```
+1. Write down the current JSON shape.
+2. Add or change the backend DTO.
+3. Update mapping and controller/service return types.
+4. Compile and test the backend endpoint.
+5. Update the corresponding Android request/response model.
+6. Update Retrofit method return types.
+7. Run the affected Android flow end to end.
+8. Update `API_REFERENCE.md`.
 
-As DTO usage expands, add focused mapper classes, for example:
+## Future DTO work
+
+New DTOs should be added when the corresponding features are implemented, rather than creating unused classes in advance. Likely future areas include:
 
 ```text
-JobMapper
-SignupMapper
-AttendanceMapper
-PerformanceMapper
+registration
+job updates
+performance summaries
+earnings summaries
+pagination
 ```
 
-Avoid introducing a mapping framework until manual mapping becomes repetitive enough to justify it.
-
-## Compatibility strategy
-
-For every DTO migration:
-
-1. Write down the current JSON.
-2. Add the DTO and mapper.
-3. Keep field names stable when possible.
-4. Update the controller.
-5. Compile the backend.
-6. Test the endpoint directly.
-7. Update the Android model only when the JSON changed.
-8. Run the end-to-end regression flow.
-
-Do not refactor every API at once immediately before the customer demo.
+`ApiErrorResponse` currently remains under the controller package. Moving it to a `dto/common` package would be an organizational cleanup only; the API already returns a structured error object rather than a persistence entity.

@@ -12,7 +12,7 @@ Android emulator base URL:
 http://10.0.2.2:8081/
 ```
 
-The routes below reflect the current development flow. Update this document whenever controller mappings change.
+The routes below reflect the current controllers and DTO-based request/response contracts.
 
 ## Authentication
 
@@ -20,13 +20,23 @@ The routes below reflect the current development flow. Update this document when
 
 ```http
 POST /api/auth/login
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "phoneNumber": "90000001",
+  "password": ""
+}
 ```
 
 Current prototype behavior:
 
-- Login is based on a seeded phone number.
-- Password authentication is not implemented yet.
-- The response identifies the current user and role.
+- Login looks up the seeded user by phone number.
+- Password verification is not implemented yet.
+- The response contains the user's id, phone number, name, role and creation time.
 
 ## Users
 
@@ -36,16 +46,9 @@ Current prototype behavior:
 GET /api/users
 ```
 
-Used for seed-data inspection and development testing.
+Returns user summary DTOs for development and testing.
 
-### Create user
-
-```http
-POST /api/users
-Content-Type: application/json
-```
-
-The current endpoint may still accept a user-shaped body directly. This should later move to a registration or create-user request DTO.
+There is currently no `POST /api/users` endpoint. Registration should be added later with dedicated request/response DTOs rather than accepting a `User` entity.
 
 ## Jobs
 
@@ -55,16 +58,41 @@ The current endpoint may still accept a user-shaped body directly. This should l
 GET /api/jobs
 ```
 
+### Get one job
+
+```http
+GET /api/jobs/{jobId}
+```
+
+### Get jobs owned by a coordinator
+
+```http
+GET /api/jobs/coordinator/{coordinatorId}
+```
+
 ### Create a job
 
 ```http
-POST /api/jobs?coordinatorId={coordinatorId}
+POST /api/jobs
 Content-Type: application/json
 ```
 
-The backend validates that the acting user is a coordinator.
+Request body:
 
-Current job information includes the core job title, description, location, date/time, slots, status and coordinator relationship.
+```json
+{
+  "coordinatorId": 1,
+  "title": "Banquet Server",
+  "description": "Dinner event shift",
+  "location": "Kowloon Hotel",
+  "startDateTime": "2026-09-10T17:00:00",
+  "endDateTime": "2026-09-10T23:00:00",
+  "hourlyRate": 90.00,
+  "totalSlots": 5
+}
+```
+
+The backend validates the coordinator and returns a `JobResponse` rather than the persistence entity.
 
 ## Signups
 
@@ -74,7 +102,7 @@ Current job information includes the core job title, description, location, date
 GET /api/signups
 ```
 
-This is useful for development, but client screens should prefer role-specific endpoints.
+Useful for development. Client screens should normally prefer the role-specific endpoints below.
 
 ### Get one worker's signups
 
@@ -96,59 +124,97 @@ The backend checks that the coordinator owns the job.
 GET /api/signups/coordinator/{coordinatorId}
 ```
 
+The signup GET endpoints return the full `SignupResponse`, including worker, job and action information required by application screens.
+
 ### Apply for a job
 
 ```http
-POST /api/signups?workerId={workerId}&jobId={jobId}
+POST /api/signups
+Content-Type: application/json
 ```
 
-Initial status:
+Request body:
 
-```text
-PENDING
+```json
+{
+  "workerId": 2,
+  "jobId": 10
+}
 ```
 
-A worker cannot create a duplicate signup for the same job.
+Initial status is `PENDING`. A worker cannot create a duplicate signup for the same job.
+
+Successful signup mutations return the focused `SignupActionResponse`:
+
+```json
+{
+  "id": 25,
+  "status": "PENDING",
+  "updatedAt": "2026-09-05T10:20:30",
+  "actionReason": null
+}
+```
 
 ### Approve a signup
 
 ```http
-PUT /api/signups/{signupId}/approve?coordinatorId={coordinatorId}&reason={optionalReason}
+PUT /api/signups/{signupId}/approve
+Content-Type: application/json
+```
+
+Request body:
+
+```json
+{
+  "coordinatorId": 1,
+  "reason": "Approved by coordinator"
+}
 ```
 
 Expected effects:
 
 - Signup status becomes `APPROVED`.
-- The acting coordinator is recorded.
+- The acting coordinator is recorded internally.
 - The action time and optional reason are recorded.
 - Filled-slot information is updated.
 - A full job can move to `FULL`.
 
+The response is `SignupActionResponse`.
+
 ### Reject a signup
 
 ```http
-PUT /api/signups/{signupId}/reject?coordinatorId={coordinatorId}&reason={optionalReason}
+PUT /api/signups/{signupId}/reject
+Content-Type: application/json
 ```
 
-Expected status:
+Request body:
 
-```text
-REJECTED
+```json
+{
+  "coordinatorId": 1,
+  "reason": "Shift already filled"
+}
 ```
+
+Expected status is `REJECTED`. The response is `SignupActionResponse`.
 
 ### Record attendance
 
 ```http
 PUT /api/signups/{signupId}/attend
+Content-Type: application/json
 ```
 
-Current query parameters:
+Request body:
 
-```text
-recordedByUserId
-status
-lateMinutes
-reason
+```json
+{
+  "recordedByUserId": 1,
+  "status": "LATE",
+  "lateMinutes": 10,
+  "reason": "Traffic"
+}
 ```
 
 Supported attendance statuses:
@@ -159,11 +225,7 @@ LATE
 NO_SHOW
 ```
 
-Example shape:
-
-```http
-PUT /api/signups/15/attend?recordedByUserId=1&status=LATE&lateMinutes=10&reason=Traffic
-```
+The response is an `AttendanceResponse` containing the attendance id, signup id, worker id, job id, status, late minutes, notes, recorded time and recorder id.
 
 ## Worker Schedule
 
@@ -173,29 +235,12 @@ PUT /api/signups/15/attend?recordedByUserId=1&status=LATE&lateMinutes=10&reason=
 GET /api/schedules/worker/{workerId}
 ```
 
-The response groups work into:
+The response groups schedule items into:
 
 - `upcoming`
 - `completed`
 
-Each item is designed for the Android calendar and schedule list and can include:
-
-```json
-{
-  "jobId": 10,
-  "signupId": 25,
-  "title": "Banquet Server",
-  "location": "Kowloon Hotel",
-  "date": "2026-07-28",
-  "startTime": "11:30",
-  "endTime": null,
-  "signupStatus": "APPROVED",
-  "attendanceStatus": null,
-  "lateMinutes": 0
-}
-```
-
-`endTime` may currently be `null` because the backend job model still needs a fully separated shift-time representation.
+The schedule contract is DTO-based and designed for the Android schedule screens.
 
 ## Status reference
 
@@ -232,33 +277,3 @@ COMPLETED
 LATE
 NO_SHOW
 ```
-
-## Error behavior
-
-The backend has structured exception handling for expected failures, including:
-
-- Unknown user, job or signup
-- Invalid role
-- Coordinator does not own the job
-- Job is not open
-- Job is full
-- Duplicate signup
-- Signup has already been processed
-- Invalid attendance transition
-
-Duplicate signup should return:
-
-```text
-HTTP 409 Conflict
-```
-
-Android should display the backend's meaningful message rather than only showing the numeric status code.
-
-## Planned API improvements
-
-- Replace direct entity request and response bodies with specific DTOs.
-- Add performance-summary endpoints.
-- Add worker-performance detail and history endpoints.
-- Add Excel report download endpoints.
-- Add registration and stronger authentication endpoints.
-- Add pagination and date-range filtering where result sets become large.
