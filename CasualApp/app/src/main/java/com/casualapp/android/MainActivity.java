@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.casualapp.android.model.AttendanceResponse;
 import com.casualapp.android.model.Job;
+import com.casualapp.android.model.SignupActionResponse;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
@@ -475,12 +476,12 @@ public class MainActivity extends AppCompatActivity {
                         )
                 )
                 .enqueue(
-                        new Callback<SignupResponse>() {
+                        new Callback<SignupActionResponse>() {
 
                             @Override
                             public void onResponse(
-                                    Call<SignupResponse> call,
-                                    Response<SignupResponse> response
+                                    Call<SignupActionResponse> call,
+                                    Response<SignupActionResponse> response
                             ) {
 
                                 if (!response.isSuccessful()) {
@@ -489,7 +490,7 @@ public class MainActivity extends AppCompatActivity {
                                     return;
                                 }
 
-                                SignupResponse signup =
+                                SignupActionResponse signup =
                                         response.body();
 
                                 if (signup == null) {
@@ -541,34 +542,6 @@ public class MainActivity extends AppCompatActivity {
                                     );
                                 }
 
-                                if (signup.getWorkerName()
-                                        != null) {
-
-                                    result.append(
-                                                    "\nWorker: "
-                                            )
-                                            .append(
-                                                    safeText(
-                                                            signup.getWorkerName(),
-                                                            "Unknown worker"
-                                                    )
-                                            );
-                                }
-
-                                if (signup.getJobTitle()
-                                        != null) {
-
-                                    result.append(
-                                                    "\nJob: "
-                                            )
-                                            .append(
-                                                    safeText(
-                                                            signup.getJobTitle(),
-                                                            "Unknown job"
-                                                    )
-                                            );
-                                }
-
                                 result.append(
                                                 "\n\nSaved lastSignupId: "
                                         )
@@ -583,7 +556,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(
-                                    Call<SignupResponse> call,
+                                    Call<SignupActionResponse> call,
                                     Throwable throwable
                             ) {
 
@@ -636,12 +609,12 @@ public class MainActivity extends AppCompatActivity {
                         )
                 )
                 .enqueue(
-                        new Callback<SignupResponse>() {
+                        new Callback<SignupActionResponse>() {
 
                             @Override
                             public void onResponse(
-                                    Call<SignupResponse> call,
-                                    Response<SignupResponse> response
+                                    Call<SignupActionResponse> call,
+                                    Response<SignupActionResponse> response
                             ) {
 
                                 if (!response.isSuccessful()) {
@@ -650,7 +623,7 @@ public class MainActivity extends AppCompatActivity {
                                     return;
                                 }
 
-                                SignupResponse signup =
+                                SignupActionResponse signup =
                                         response.body();
 
                                 if (signup == null) {
@@ -692,20 +665,6 @@ public class MainActivity extends AppCompatActivity {
                                     );
                                 }
 
-                                if (signup.getActionedByName()
-                                        != null) {
-
-                                    result.append(
-                                                    "\nApproved by: "
-                                            )
-                                            .append(
-                                                    safeText(
-                                                            signup.getActionedByName(),
-                                                            "Coordinator"
-                                                    )
-                                            );
-                                }
-
                                 if (signup.getActionReason()
                                         != null
                                         && !signup.getActionReason()
@@ -738,7 +697,7 @@ public class MainActivity extends AppCompatActivity {
 
                             @Override
                             public void onFailure(
-                                    Call<SignupResponse> call,
+                                    Call<SignupActionResponse> call,
                                     Throwable throwable
                             ) {
 

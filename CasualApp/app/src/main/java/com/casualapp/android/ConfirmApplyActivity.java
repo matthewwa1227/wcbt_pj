@@ -11,7 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatButton;
 
 import com.casualapp.android.model.Job;
-import com.casualapp.android.model.SignupResponse;
+import com.casualapp.android.model.SignupActionResponse;
 import com.casualapp.android.model.SignupRequest;
 import com.casualapp.android.model.User;
 import com.casualapp.android.network.RetrofitClient;
@@ -187,8 +187,8 @@ public class ConfirmApplyActivity extends AppCompatActivity {
 
                     @Override
                     public void onResponse(
-                            Call<SignupResponse> call,
-                            Response<SignupResponse> response
+                            Call<SignupActionResponse> call,
+                            Response<SignupActionResponse> response
                     ) {
                         setSubmitting(false);
 
@@ -199,7 +199,7 @@ public class ConfirmApplyActivity extends AppCompatActivity {
                             return;
                         }
 
-                        SignupResponse createdSignup = response.body();
+                        SignupActionResponse createdSignup = response.body();
 
                         Intent intent = new Intent(
                                 ConfirmApplyActivity.this,
@@ -226,7 +226,7 @@ public class ConfirmApplyActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(
-                            Call<SignupResponse> call,
+                            Call<SignupActionResponse> call,
                             Throwable throwable
                     ) {
                         setSubmitting(false);

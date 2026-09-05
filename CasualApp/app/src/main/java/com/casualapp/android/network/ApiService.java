@@ -7,6 +7,7 @@ import com.casualapp.android.model.CreateJobRequest;
 import com.casualapp.android.model.Job;
 import com.casualapp.android.model.LoginRequest;
 import com.casualapp.android.model.RejectSignupRequest;
+import com.casualapp.android.model.SignupActionResponse;
 import com.casualapp.android.model.SignupRequest;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.User;
@@ -37,12 +38,6 @@ public interface ApiService {
     @GET("api/users")
     Call<List<User>> getAllUsers();
 
-    @POST("api/users")
-    Call<User> createUser(
-            @Body User user
-    );
-
-
         // Jobs
 
         @GET("api/jobs")
@@ -65,7 +60,7 @@ public interface ApiService {
     Call<List<SignupResponse>> getAllSignups();
 
     @POST("api/signups")
-    Call<SignupResponse> signUp(
+    Call<SignupActionResponse> signUp(
             @Body SignupRequest request
     );
 
@@ -97,13 +92,13 @@ public interface ApiService {
     // Signup actions
 
     @PUT("api/signups/{signupId}/approve")
-    Call<SignupResponse> approveSignup(
+    Call<SignupActionResponse> approveSignup(
             @Path("signupId") Long signupId,
             @Body ApproveSignupRequest request
     );
 
     @PUT("api/signups/{signupId}/reject")
-    Call<SignupResponse> rejectSignup(
+    Call<SignupActionResponse> rejectSignup(
             @Path("signupId") Long signupId,
             @Body RejectSignupRequest request
     );

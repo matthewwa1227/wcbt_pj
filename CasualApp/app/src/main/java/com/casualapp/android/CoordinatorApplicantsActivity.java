@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.casualapp.android.model.AttendanceResponse;
+import com.casualapp.android.model.SignupActionResponse;
 import com.casualapp.android.model.SignupResponse;
 import com.casualapp.android.model.ApproveSignupRequest;
 import com.casualapp.android.model.AttendanceRequest;
@@ -493,12 +494,12 @@ public class CoordinatorApplicantsActivity
                         )
                 )
                 .enqueue(
-                        new Callback<SignupResponse>() {
+                        new Callback<SignupActionResponse>() {
 
                             @Override
                             public void onResponse(
-                                    Call<SignupResponse> call,
-                                    Response<SignupResponse> response
+                                    Call<SignupActionResponse> call,
+                                    Response<SignupActionResponse> response
                             ) {
 
                                 setActionLoading(false);
@@ -519,7 +520,7 @@ public class CoordinatorApplicantsActivity
 
                             @Override
                             public void onFailure(
-                                    Call<SignupResponse> call,
+                                    Call<SignupActionResponse> call,
                                     Throwable throwable
                             ) {
 
@@ -626,12 +627,12 @@ public class CoordinatorApplicantsActivity
                         )
                 )
                 .enqueue(
-                        new Callback<SignupResponse>() {
+                        new Callback<SignupActionResponse>() {
 
                             @Override
                             public void onResponse(
-                                    Call<SignupResponse> call,
-                                    Response<SignupResponse> response
+                                    Call<SignupActionResponse> call,
+                                    Response<SignupActionResponse> response
                             ) {
 
                                 setActionLoading(false);
@@ -652,7 +653,7 @@ public class CoordinatorApplicantsActivity
 
                             @Override
                             public void onFailure(
-                                    Call<SignupResponse> call,
+                                    Call<SignupActionResponse> call,
                                     Throwable throwable
                             ) {
 
